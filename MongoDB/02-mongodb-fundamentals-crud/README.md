@@ -1,0 +1,382 @@
+# 02. MongoDB আর্কিটেকচার, Compass, Atlas ও CRUD অপারেশনস (MongoDB Architecture, BSON, Atlas & CRUD)
+
+---
+
+## 🧭 দ্রুত নেভিগেশন (Quick Navigation)
+- [⬅️ মূল রিপোজিটরি সূচিপত্র](../../README.md)
+- [📊 লার্নিং ট্র্যাকার](../../LEARNING-TRACKER.md)
+- [📁 MongoDB ট্র্যাক](../../MongoDB/README.md)
+
+---
+
+## Introduction
+
+আপনার ওয়েবসাইটের ইউজার যখন একটি অ্যাপ ব্যবহার করে স্ক্রোল করতে থাকে, তখন ডেটাবেসের ধীরগতির কারণে যদি দুই সেকেন্ড বাফারিং হয়, তবে ইউজার অ্যাপটি বন্ধ করে দিতে পারে! ঐতিহ্যবাহী SQL ডেটাবেস থেকে আধুনিক নো-এসকিউএল (NoSQL) ডেটাবেস যেমন MongoDB-তে শিফট করার পেছনে মূল রহস্যটি ঠিক কোথায়?
+
+এই পাঠটি সম্পন্ন করার পর আপনি করতে পারবেন:
+
+* SQL এবং NoSQL (MongoDB) ডেটাবেসের পার্থক্য এবং MongoDB ব্যবহারের সুবিধাগুলো ব্যাখ্যা করতে পারবেন।
+* MongoDB Atlas (Cloud) ক্লাস্টার তৈরি করে Node.js অ্যাপ্লিকেশনের সাথে নিরাপদ কানেকশন স্থাপন করতে পারবেন।
+* MongoDB Driver ব্যবহার করে Node.js-এ CRUD (Create, Read, Update, Delete) অপারেশন বাস্তবায়ন করতে পারবেন।
+* `ObjectId` এর ব্যবহার এবং MongoDB-তে ডেটা ফিল্টারিংয়ের সঠিক নিয়ম প্রয়োগ করতে পারবেন।
+* MongoDB Compass এবং VS Code Extension-এর মাধ্যমে ভিজ্যুয়ালি ডেটাবেস পরিচালনা ও ডুপ্লিকেট ডেটা প্রতিরোধ লজিক তৈরি করতে পারবেন।
+
+## ১. এই ক্লাসে কী কী শেখানো হয়েছে?
+
+এই ক্লাসে আমরা প্রজেক্টের পুরনো ফাইল হ্যান্ডলিং (File Handling) এবং SQL/MySQL পুরোপুরি বাদ দিয়ে ডেটা সংরক্ষণের জন্য **MongoDB** নামক আধুনিক নো-এসকিউএল ডেটাবেস ইমপ্লিমেন্ট করা শিখেছি। নিচে প্রধান আলোচ্য বিষয়গুলোর একটি সংক্ষিপ্ত তালিকা দেওয়া হলো:
+
+1. **MongoDB-এর পরিচিতি**: NoSQL ডেটাবেস কী, কেন আধুনিক ব্যাকএন্ড ও MERN Stack (MongoDB, Express, React, Node) প্রজেক্টে MongoDB এত জনপ্রিয়।
+2. **SQL vs MongoDB**: রিলেশনাল ডেটাবেস (SQL) এবং ডকুমেন্ট-ভিত্তিক ডেটাবেসের (MongoDB) মধ্যে পার্থক্য।
+3. **MongoDB Atlas সেটআপ**: ক্লাউডে ফ্রি m0 ক্লাস্টার তৈরি, ইউজার তৈরি এবং IP Address Whitelisting কনফিগার করা।
+4. **Node.js-এ MongoDB Driver কানেকশন**: `mongodb` অফিশিয়াল প্যাকেজ ইন্সটল করা এবং Database Utility File (`database.js`) তৈরি।
+5. **Home Model-এ CRUD Operations**:
+  * **Create**: `insertOne()` ব্যবহার করে নতুন হোম অবজেক্ট সেভ করা।
+  * **Read**: `find().toArray()` দিয়ে সব ডাটা এবং `find().next()` দিয়ে একক ডাটা রিট্রাইভ করা।
+  * **Update**: `updateOne()` এবং `$set` অপারেটর ব্যবহার করে ডাটা আপডেট করা (`_id` এর Immutable Error হ্যান্ডলিং সহ)।
+  * **Delete**: `deleteOne()` দিয়ে ডাটা ডিলিট করা।
+6. **ObjectId হ্যান্ডলিং**: স্ট্রিং আইডিকে MongoDB-এর স্বকীয় `ObjectId`\-তে রূপান্তর করার নিয়ম।
+7. **GUI Tools ব্যবহার**: MongoDB Compass ড্যাশবোর্ড এবং VS Code Extension কানেক্ট করে ভিজ্যুয়ালি ডেটাবেস পর্যবেক্ষণ।
+8. **Favorite Model রিফ্যাক্টরিং**: ফাইল সিস্টেম থেকে সরিয়ে MongoDB-তে ফেভারিট হোম সেভ করা এবং একাধিকবার সেভ হওয়া রোধ করতে **Duplicate Prevention Logic** প্রয়োগ।
+
+### 🧠 Class 16 Topics Mind Map
+> [!TIP]
+> **মূল কনসেপ্ট সারসংক্ষেপ (Core Concept Breakdown):**
+> A visual mind map breaking down the main subtopics covered in Class 16, from MongoDB concepts to Atlas setup, CRUD operations, and tools.
+
+## ২. Topic 1: MongoDB এবং NoSQL-এর মূল ধারণা (Introduction to MongoDB &amp; NoSQL)
+
+### What is it? (এটি কী?)
+
+MongoDB হলো একটি জনপ্রিয়, ওপেন-সোর্স (Free to use), ক্রস-প্ল্যাটফর্ম **NoSQL Document Database**। প্রচলিত SQL ডেটাবেসের মতো এতে টেবিল (Table), সারি (Row) বা কলাম (Column) থাকে না। এর পরিবর্তে ডেটা **JSON-like (BSON)** নমনীয় ডকুমেন্টে সঞ্চিত হয়।
+
+### Why is it used? (কেন এটি ব্যবহার করা হয়?)
+
+আশির বা নব্বইয়ের দশকে স্টোরেজ (Hard Disk) অত্যন্ত ব্যয়বহুল ছিল, কিন্তু ইউজারের সংখ্যা ছিল সীমিত। তাই SQL ডেটাবেস ডাটা নরম্যালাইজ (Normalize) করে কম জায়গায় সেভ করার ওপর জোর দিত। কিন্তু বর্তমান সোশ্যাল মিডিয়া ও ইন্টারনেটের যুগে ডাটাসাইজ ও ইউজার রিকুয়েস্ট কোটি ছাড়িয়ে গেছে। এখন স্টোরেজ অনেক সস্তা, কিন্তু পারফরম্যান্স ও স্পিড সবচেয়ে গুরুত্বপূর্ণ।
+
+SQL-এ প্রচুর `JOIN` অপারেশন চালানোর কারণে বিশাল ডেটাতে রেসপন্স স্লো হয়ে যায়। MongoDB ডুপ্লিকেট ডেটা বা বিশাল সাইজের ডেটা দ্রুত Read/Write করতে ডিজাইন করা হয়েছে। MERN Stack-এর 'M' দিয়ে MongoDB-কেই বোঝানো হয়।
+
+### How does it work? (এটি কীভাবে কাজ করে?)
+
+* **Collections**: SQL-এর টেবিলের (Table) বিকল্প হলো MongoDB-এর কালেকশন (Collection)।
+* **Documents**: SQL-এর টেবিল রোর (Row) বিকল্প হলো ডকুমেন্ট (Document)। একটি ডকুমেন্টে আমরা যেমন ইচ্ছা ডায়নামিক JSON রিলেটেড ডাটা সেভ করতে পারি।
+* **Dynamic Schema**: এক ডকুমেন্টের স্ট্রাকচারের সাথে অন্য ডকুমেন্টের স্ট্রাকচার হুবহু মিল না থাকলেও চলে।
+
+### Important Concepts &amp; Features
+
+1. **High Performance**: জয়েনিং কম থাকায় পড়ার ও লেখার গতি অনেক বেশি।
+2. **Horizontal Scaling**: ডেটাবেসে লোড বাড়লে সহজেই নতুন একাধিক সার্ভার (Cluster Machine) যুক্ত করে ডেটা ভাগ করে নেওয়া যায়।
+3. **High Availability (Auto Failover)**: ডেটার একাধিক কপি ক্লাউডে থাকে। একটি সার্ভার ডাউন হলে অন্য কপি থেকে স্বয়ংক্রিয়ভাবে ডাটা পরিবেশন করা হয়।
+4. **Geo-spatial &amp; Text Search**: লোকেশন ভিত্তিক সার্চ (যেমন: Zomato বা Swiggy-তে আপনার ৫ কিমির মধ্যে থাকা রেস্তোরাঁ খোঁজা) MongoDB-তে খুব সহজ।
+
+### Mental Model (মানসিক মডেল)
+
+ভাবুন SQL হলো একটি ক্লাসিক্যাল রেজিস্টার খাতা, যেখানে নির্দিষ্ট ঘর (Column) কাটা আছে এবং সেই ঘরের বাইরে কিছু লেখা যায় না। আর MongoDB হলো একটি ফাইল ফোল্ডার (Collection), যার ভেতরে আপনি বিভিন্ন আকারের খাম বা কাগজ (Document) ইচ্ছেমতো রেখে দিতে পারেন।
+
+### 📊 SQL vs NoSQL MongoDB Comparison
+> [!NOTE]
+> **আর্কিটেকচার ও কাজের প্রবাহচিত্র (Visual Diagram & Flow):**
+> An infographic highlighting the structural and performance differences between traditional SQL databases and MongoDB.
+
+## ৩. Topic 2: MongoDB Atlas Setup &amp; Node.js Driver Integration
+
+### What is it? (এটি কী?)
+
+MongoDB ব্যবহারের দুটি প্রধান উপায় রয়েছে:
+
+1. **Community Server**: নিজের কম্পিউটারে লোকালি ইন্সটল করা।
+2. **MongoDB Atlas**: MongoDB-এর সম্পূর্ণ ক্লাউড ডেটাবেস সার্ভিস (Database-as-a-Service)।
+
+### Why use MongoDB Atlas? (কেন Atlas ব্যবহার করা হয়?)
+
+নিজের কম্পিউটারে ডেটাবেস সেটআপ করলে অন্য কেউ কোড রান করতে গেলে তাকেও লোকালি ডেটাবেস কনফিগার করতে হয়। Atlas ক্লাউডে হোস্ট করা থাকে, ফলে প্রজেক্টটি যে কোনো কম্পিউটার বা সার্ভার থেকে সরাসরি একই ডেটাবেসে কানেক্ট হয়ে চলতে পারে। এর ফ্রি Tier (m0) আমাদের শেখার জন্য যথেষ্ঠ (৫১২ MB স্টোরেজ)।
+
+### Setting up MongoDB Atlas (ধাপসমূহ)
+
+1. MongoDB ওয়েবসাইটে অ্যাকাউন্ট তৈরি করে **Atlas** প্রোডাক্ট পছন্দ করুন।
+2. **Shared Tier (m0)** নির্বাচন করুন (ফ্রি সংস্করণ)।
+3. ক্লাস্টার নাম দিন (যেমন: `complete-coding`) এবং নিকটস্থ রিজিয়ন (যেমন: Mumbai) বেছে নিন।
+4. **Database User** তৈরি করুন (যেমন: Username: `root`, Password: `root`)।
+5. **Network Access**: আপনার বর্তমান IP Address যুক্ত করুন অথবা ডেভেলপমেন্টের সুবিধার্থে Wildcard IP (`0.0.0.0/0`) এলাউ করুন।
+6. **Connection String**: Node.js Driver সিলেক্ট করে প্রাপ্ত Connection String URI টি কপি করে রাখুন (যেমন: `mongodb+srv://root:root@cluster...`)।
+
+### Connecting Node.js to MongoDB Driver
+
+প্রথমে প্রজেক্ট টার্মিনালে অফিশিয়াল ড্রাইভার ইন্সটল করতে হয়: `npm install mongodb`
+
+### Database Connection Utility Code (`database.js`)
+
+```
+const mongodb = require('mongodb');
+const MongoClient = mongodb.MongoClient;
+
+// Atlas Connection String
+const mongoUrl = 'mongodb+srv://root:root@completecoding.mongodb.net/?retryWrites=true&amp;w=majority';
+
+let _db;
+
+// ডেটাবেস কানেকশন তৈরি করার ফাংশন
+const mongoConnect = (callback) =&gt; {
+  MongoClient.connect(mongoUrl)
+    .then(client =&gt; {
+      console.log('MongoDB Cloud-এ সফলভাবে কানেক্টেড!');
+      _db = client.db('airBnb'); // airBnb নামক ডেটাবেস অবজেক্ট সেভ হচ্ছে
+      callback();
+    })
+    .catch(err =&gt; {
+      console.log('MongoDB কানেকশনে সমস্যা:', err);
+      throw err;
+    });
+};
+
+// কানেক্টেড ডেটাবেস অবজেক্ট রিটার্ন করার ফাংশন
+const getDb = () =&gt; {
+  if (_db) {
+    return _db;
+  }
+  throw new Error('MongoDB কানেক্ট করা হয়নি!');
+};
+
+module.exports = { mongoConnect, getDb };
+
+```
+
+### How it works? (কীভাবে কাজ করে?)
+
+1. `MongoClient.connect()` প্রমিজ রিটার্ন করে এবং ক্লাউড ক্লাস্টারের সাথে হ্যান্ডশেক করে।
+2. কানেকশন সফল হলে `client.db('airBnb')` এর মাধ্যমে নির্দিষ্ট ডেটাবেসের রেফারেন্সটি `_db` ভ্যারিয়েবলে স্টোর করা হয়।
+3. `app.js`\-এ সার্ভার চালু করার পূর্বেই `mongoConnect()` কে কল করে ডেটাবেস নিশ্চিত করা হয়।
+
+### Common Beginner Mistakes
+
+* **IP Restriction Block**: ইন্টারনেটের IP পরিবর্তন হলে ক্লাউডে কানেকশন নেটওয়ার্ক এরর (SSL / Connection Refused) দেয়। 해결: Atlas-এর Network Access-এ গিয়ে বর্তমান IP অথবা `0.0.0.0/0` যোগ করতে হবে।
+* **Wrong Password**: Connection URI-তে পাসওয়ার্ড বা ইউজারনেম ভুল দেওয়া।
+
+### 📊 Node.js to MongoDB Atlas Connection Flow
+> [!NOTE]
+> **আর্কিটেকচার ও কাজের প্রবাহচিত্র (Visual Diagram & Flow):**
+> A slide deck illustrating the sequential flow of connecting a Node.js application to MongoDB Atlas via the Official MongoDB Driver.
+
+## ৪. Topic 3: MongoDB CRUD Operations in Node.js (Home Model)
+
+### Overview of CRUD Operations
+
+CRUD হলো **Create**, **Read**, **Update**, এবং **Delete**। নোড-জেএস মডেল থেকে MongoDB-এর ডেটা ম্যানিপুলেশন করার জন্য ড্রাইভারের বিভিন্ন বিল্ট-ইন মেথড ব্যবহার করা হয়।
+
+### 1\. Create (ডেটা সংরক্ষণ করা) - `insertOne()`
+
+MongoDB-তে নতুন কোনো ফাইল বা স্কিমা আগে থেকে বানাতে হয় না। আপনি সরাসরি অবজেক্ট পাঠিয়ে দিলে MongoDB নিজে থেকেই কালেকশন এবং ডকুমেন্ট তৈরি করে নেয়।
+
+```
+save() {
+  const db = getDb();
+  return db.collection('homes').insertOne(this);
+}
+
+```
+
+* **db.collection('homes')**: 'homes' নামক কালেকশন অ্যাক্সেস করে।
+* **insertOne(this)**: বর্তমান অবজেক্টটিকে একটি নতুন ডকুমেন্ট হিসেবে ইনসার্ট করে এবং একটি প্রমিজ রিটার্ন করে।
+
+### 2\. Read All (সব ডেটা পড়া) - `find().toArray()`
+
+```
+static fetchAll() {
+  const db = getDb();
+  return db.collection('homes').find().toArray();
+}
+
+```
+
+* **find()**: এটি সরাসরি সব ডেটার মেমোরি অবজেক্ট দেয় না, বরং একটি **Cursor** (পয়েন্টার বা আইটারেটর) রিটার্ন করে।
+* **toArray()**: Cursor-কে এক্সিকিউট করে সব ডকুমেন্ট একসাথে নিয়ে একটি JavaScript Array-তে পরিণত করে।
+
+### 3\. Read Single Record &amp; Understanding `ObjectId`
+
+MongoDB প্রতিটি ডকুমেন্টের জন্য স্বকীয় একটি ১৭-বাইটের ইউনিক আইডি তৈরি করে, যাকে বলা হয় `_id`। এটি সাধারণ String নয়, এটি `ObjectId` নামক অবজেক্ট টাইপ।
+
+যদি আমরা ইউআরএল (URL) থেকে প্রাপ্ত স্ট্রিং আইডি দিয়ে সার্চ করতে চাই, তবে তাকে `mongodb` প্যাকেজ থেকে আসা `ObjectId` দিয়ে র‍্যাপ (Wrap) করতে হয়:
+
+```
+const { ObjectId } = require('mongodb');
+
+static findById(homeId) {
+  const db = getDb();
+  return db.collection('homes')
+    .find({ _id: new ObjectId(String(homeId)) })
+    .next();
+}
+
+```
+
+* **new ObjectId(homeId)**: স্ট্রিং আইডিকে MongoDB-এর গ্রহণযোগ্য `ObjectId` অবজেক্টে রূপান্তর করে।
+* **.next()**: কালেকশনের Cursor থেকে প্রথম বা পরবর্তী একক ডকুমেন্টটি সরাসরি রিটার্ন করে।
+
+### 4\. Update (ডেটা আপডেট করা) - `updateOne()` &amp; `$set` Operator
+
+ডকুমেন্ট আপডেট করার সময় মূল `_id` ফিল্ড পরিবর্তন করা যায় না (এটি Immutable)। তাই সরাসরি অবজেক্ট না পাঠিয়ে ফিল্ডগুলো আলাদা করে `$set` করতে হয়।
+
+```
+// Update Case in save()
+const updateFields = {
+  houseName: this.houseName,
+  price: this.price,
+  location: this.location,
+  rating: this.rating,
+  photoUrl: this.photoUrl,
+  description: this.description
+};
+
+return db.collection('homes').updateOne(
+  { _id: new ObjectId(String(this._id)) }, // Filter Query
+  { $set: updateFields }                  // Update Action
+);
+
+```
+
+* **Common Error**: `_id` সহ পুরো `this` অবজেক্টকে `$set`\-এ পাঠালে `Modifying immutable field _id` এরর দিবে।
+
+### 5\. Delete (ডেটা মুছে ফেলা) - `deleteOne()`
+
+```
+static deleteById(homeId) {
+  const db = getDb();
+  return db.collection('homes').deleteOne({ _id: new ObjectId(String(homeId)) });
+}
+
+```
+
+### 💡 MongoDB Driver Key Methods
+> [!IMPORTANT]
+> **কুইক রিভিশন পয়েন্টস (Quick Revision Points):**
+> Flashcards covering key MongoDB driver methods such as insertOne, find, toArray, next, updateOne, deleteOne, and ObjectId.
+
+## ৫. Topic 4: Tools - MongoDB Compass &amp; VS Code Extension
+
+### What are these tools? (এই টুলসগুলো কী?)
+
+ডেটাবেসে প্রকৃতপক্ষে ডাটা সঠিকভাবে সেভ বা আপডেট হচ্ছে কিনা, তা দেখার জন্য ডেভেলপাররা বিভিন্ন ভিজ্যুয়াল ক্লায়েন্ট বা GUI (Graphical User Interface) টুলস ব্যবহার করেন।
+
+### 1\. MongoDB Compass
+
+MongoDB Compass হলো MongoDB-এর নিজস্ব অফিসিয়াল ড্যাশবোর্ড সফটওয়্যার।
+
+* **ব্যবহার**: এটি পিসিতে ইন্সটল করে Atlas Connection String দিলে পুরো ডেটাবেস, কালেকশন এবং ডকুমেন্টগুলো চোখের সামনে দেখা যায়।
+* **সুবিধা**: ব্রাউজার ওপেন না করেই ম্যানুয়ালি কোনো ডকুমেন্ট আপডেট করা, টেস্ট ডেটা ডিলিট করা বা ফিল্টার চালিয়ে সার্চ করা সম্ভব হয়।
+
+### 2\. MongoDB for VS Code Extension
+
+VS Code-এর ভেতরেই এক্সটেনশন ট্যাব থেকে "MongoDB for VS Code" ইন্সটল করে নেওয়া যায়।
+
+* **সুবিধা**: কোড এডিটর ছেড়ে অন্য কোনো অ্যাপ্লিকেশনে না গিয়েই সরাসরি কোডিং উইন্ডোর পাশে ক্লাউড ডেটাবেসের লাইভ ডেটা টেবিল দেখতে পাওয়া যায়।
+
+### 📌 GUI Tools vs Code-Based DB Management
+> An audio overview discussing how tools like MongoDB Compass and VS Code extensions boost developer efficiency during database debugging.
+
+## ৬. Topic 5: Favorite Model &amp; Duplicate Record Prevention
+
+### Problem Statement (সমস্যাটি কী ছিল?)
+
+ইউজার যখন 'Add to Favorite' বাটনে একাধিকবার ক্লিক করে, তখন ডেটাবেসে একই ঘরের আইডি বারবার জমা হচ্ছিল (Duplicate Entries)। এতে ডেটাবেসে অপ্রয়োজনীয় জ্যাম তৈরি হচ্ছিল এবং ইউজার 'Remove Favorite' করলেও একবার ডিলিট হওয়ার পর ডেটা থেকে যাচ্ছিল।
+
+### Solution Logic (কীভাবে সমাধান করা হয়েছে?)
+
+আমরা `Favorite` মডেলের `save()` মেথডের ভেতরে ইনসার্ট করার আগেই চেক করব যে ওই একই `houseId` দিয়ে ডেটাবেসের `favorites` কালেকশনে কোনো রেকর্ড আগে থেকেই আছে কিনা।
+
+```
+class Favorite {
+  constructor(houseId) {
+    this.houseId = houseId;
+  }
+
+  save() {
+    const db = getDb();
+    // ১. আগে চেক করি ডাটা আছে কিনা
+    return db.collection('favorites')
+      .findOne({ houseId: this.houseId })
+      .then(existingFav =&gt; {
+        if (!existingFav) {
+          // ২. ডাটা না থাকলে নতুন ইনসার্ট করি
+          return db.collection('favorites').insertOne(this);
+        }
+        // ৩. ডাটা ইতিমধ্যে থাকলে খালি রেজল্ভড প্রমিজ ফেরত পাঠাই
+        return Promise.resolve({ status: 'already_exists' });
+      });
+  }
+}
+
+```
+
+### Matching ObjectId with JavaScript Standard
+
+MongoDB থেকে যখন `_id` রিটার্ন হয়, এটি একটি অবজেক্ট হিসেবে থাকে। তাই JavaScript-এ তুলনা (Comparison) করার আগে সেটিকে `.toString()` বা `.toHexString()` করে সাধারণ স্ট্রিং-এ রূপান্তর করতে হয়: `home._id.toString() === favHouseId`
+
+### 📊 Duplicate Record Prevention Workflow
+> [!NOTE]
+> **আর্কিটেকচার ও কাজের প্রবাহচিত্র (Visual Diagram & Flow):**
+> A visual diagram illustrating the logic flow of checking for existing documents before inserting a new favorite record.
+
+## ৭. Important Modules, Syntax &amp; Common Mistakes
+
+### Important Modules &amp; Packages
+
+| Module / Package Name | Source                         | Purpose / Feature                                                         |
+| --------------------- | ------------------------------ | ------------------------------------------------------------------------- |
+| `mongodb`             | Third-party npm package        | Node.js অ্যাপ্লিকেশনকে MongoDB ডেটাবেসের সাথে কানেক্ট করার ড্রাইভার।      |
+| `MongoClient`         | Class inside `mongodb`         | ক্লাউড বা লোকাল ক্লাস্টারের সাথে কানেকশন তৈরি ও সেশন ম্যানেজ করার ক্লাস।  |
+| `ObjectId`            | Utility Class inside `mongodb` | MongoDB-এর ২১/২৪ ক্যারেক্টারের হেক্স ডেটা আইডি তৈরি ও ভ্যালিডেট করার টুল। |
+
+### Key Differences: SQL vs MongoDB
+
+| বিষয়               | SQL (MySQL, PostgreSQL)                      | NoSQL (MongoDB)                                   |
+| ------------------ | -------------------------------------------- | ------------------------------------------------- |
+| **Data Structure** | টেবিল, রো এবং কলাম (Table, Row, Column)      | কালেকশন এবং ডকুমেন্ট (Collection, Document)       |
+| **Schema**         | কড়া নির্ধারিত স্ট্রাকচার (Rigid Schema)      | নমনীয় ও ডায়নামিক (Flexible Dynamic Schema)       |
+| **Relationships**  | Foreign Key এবং JOIN ব্যবহার করা হয়          | Nested Document বা Embed করে সম্পর্ক গড়ে তোলা হয়  |
+| **Scaling**        | Vertical Scaling (বড় র্যাম/সিপিইউ যুক্ত করা) | Horizontal Scaling (একাধিক সার্ভার ক্লাস্টার করা) |
+| **Performance**    | বিশাল ডেটাতে JOIN-এর জন্য স্লো হতে পারে      | উচ্চ রিড/রাইট স্পিড ও হাই পারফরম্যান্স            |
+
+### Common Beginner Mistakes
+
+1. **ObjectId** **নিউ কিওয়ার্ড না দেওয়া**: `ObjectId(id)` লেখার বদলে `new ObjectId(id)` ব্যবহার করা আবশ্যক।
+2. **\_id** **পরিবর্তন করার চেষ্টা করা**: `updateOne()` করার সময় `$set: this` দিলে এটি `_id` পরিবর্তন করতে গিয়ে ক্র্যাশ করে।
+3. **Cursor কে সরাসরী Array মনে করা**: `find()` ব্যবহার করলে সাথে `.toArray()` বা `.next()` না লিখলে ডেটা পাওয়া যায় না।
+
+## Summary
+
+MongoDB হলো আধুনিক ওয়েব অ্যাপ্লিকেশন এবং MERN Stack ডেভেলপমেন্টের অন্যতম ভিত্তি, যা বিশাল পরিমাণ ডেটা দ্রুত এবং নমনীয় ডায়নামিক ডকুমেন্টে সঞ্চয় করতে সক্ষম।
+
+### Key Takeaways
+
+* MongoDB কোনো টেবিল বা রো ব্যবহার করে না; এটি কালেকশন ও JSON-সদৃশ ডকুমেন্টে ডেটা সংরক্ষণ করে।
+* MongoDB Atlas হলো সম্পূর্ণ ক্লাউড ভিত্তিক ডেটাবেস সার্ভিস, যা লোকাল সেটআপের জটিলতা দূর করে।
+* Node.js ড্রাইভারের মাধ্যমে `insertOne()`, `find().toArray()`, `find().next()`, `updateOne()` এবং `deleteOne()` মেথডগুলো ব্যবহার করে CRUD করা হয়।
+* `_id` ফিল্টার করার জন্য সর্বদা `new ObjectId(id)` রূপান্তর করতে হয় এবং এটি ইমিউটেবল (অপরিবর্তনযোগ্য)।
+* ডুপ্লিকেট সেভ সমস্যা এড়াতে ইনসার্ট করার আগে `findOne()` দিয়ে ডেটার অস্তিত্ব যাচাই করা উচিত।
+
+### Quick Revision
+
+* **MongoClient.connect()**: সার্ভারের সাথে সংযোগ তৈরি করে।
+* **db.collection('name')**: নির্দিষ্ট কালেকশনে এক্সেস নেয়।
+* **find()**: ক্যুরি চালিয়ে ডাটার Cursor ফেরত দেয়।
+* **toArray()**: Cursor-কে সাধারণ অ্যারেতে রূপান্তর করে।
+* **$set**: ডকুমেন্টের নির্দিষ্ট ফিল্ড আপডেট করার অপারেটর।
+
+### Practice Questions
+
+1. SQL-এর Table এবং Row-এর সাথে MongoDB-এর কোন দুটি ধারণার তুলনা করা যায়?
+2. `find()` মেথড সরাসরি ডেটা অ্যারে না দিয়ে কী ফেরত দেয় এবং কীভাবে সেখান থেকে সম্পূর্ণ অ্যারে পাওয়া যায়?
+3. `new ObjectId(id)` ব্যবহার না করে সাধারণ String দিয়ে খোঁজ করলে MongoDB কেন ডেটা খুঁজে পায় না?
+4. `updateOne()` অপারেশন চালানোর সময় `$set: this` ব্যবহার করলে কী সমস্যা হয় এবং কেন হয়?
+5. MongoDB Atlas-এ Network Access এবং Database Access বলতে কী বোঝায়?
+
+---
+
+## 🔗 তথ্যসূত্র ও গুরুত্বপূর্ণ লিংক (References)
+- [Node.js Official Documentation](https://nodejs.org/en/docs/)
+- [Express.js Official Guide](https://expressjs.com/)
+- [MongoDB Manual](https://www.mongodb.com/docs/manual/)
+- [Mongoose Documentation](https://mongoosejs.com/docs/)
+- [MDN Web Docs](https://developer.mozilla.org/en-US/)
+
+---
+**পরবর্তী লেসন পড়ার জন্য আপনার ট্র্যাক সূচিপত্রে ফিরে যান:** [⬅️ Back to MongoDB Index](../../MongoDB/README.md)

@@ -1,69 +1,77 @@
-# 📚 MERN Stack Personal Study Notes & Technical Documentation
+# 📚 FatihForge Notes: Full-Stack MERN Technical Documentation & Study Guide
 
-স্বাগতম! এটি আমার **MERN Stack (MongoDB, Express.js, React, Node.js)** এবং এর ভিত্তি **JavaScript** শেখার একটি সুসংগঠিত, বিস্তারিত ও টেকনিক্যাল স্টাডি নোটস রিপোজিটরি।
+স্বাগতম! এটি আমার **MERN Stack (MongoDB, Express.js, React, Node.js)** এবং এর ভিত্তি **JavaScript**-এর একটি পূর্ণাঙ্গ, সুসংগঠিত, টেকনিক্যাল স্টাডি রিপোজিটরি।
 
-প্রতিটি মডিউল এবং লেসনের জন্য আলাদা ডিরেক্টরি রয়েছে, যেখানে বিস্তারিত টেকনিক্যাল ব্যাখ্যা, আর্কিটেকচার ডায়াগ্রাম, প্র্যাকটিক্যাল কোড এক্সাম্পল, কমন ভুল এবং রিভিশন গাইডলাইন অন্তর্ভুক্ত রয়েছে।
+প্রতিটি চ্যাপ্টারের মূল তাত্ত্বিক আলোচনা, আর্কিটেকচার ডায়াগ্রাম, প্র্যাকটিক্যাল কোড এক্সাম্পল, টার্মিনাল আউটপুট, কমন ভুল এবং সেলফ-অ্যাসেসমেন্ট প্রশ্নাবলী সংযুক্ত করে পেশাদার মানের ডকুমেন্টেশন তৈরি করা হয়েছে।
 
 ---
 
 ## 🗺️ রিপোজিটরি নেভিগেশন (Repository Navigation)
 
-| প্রযুক্তি (Technology) | বিবরণ (Description) | নোটস ডিরেক্টরি (Directory) | স্ট্যাটাস (Status) |
-|---|---|---|---|
-| **JavaScript** | আধুনিক জাভাস্ক্রিপ্টের কোর কনসেপ্ট, ES6+, এবং অ্যাসিনক্রোনাস প্রোগ্রামিং | [`/JavaScript`](./JavaScript/) | 🟡 In Progress |
-| **Node.js** | সার্ভার-সাইড রানটাইম, আর্কিটেকচার, ইভেন্ট লুপ এবং কোর মডিউল | [`/Node.js`](./Node.js/) | 🟢 Active |
-| **Express.js** | Node.js-এর জন্য মিনিমালিস্ট ও ফ্লেক্সিবল ওয়েব ফ্রেমওয়ার্ক এবং REST API | [`/Express.js`](./Express.js/) | ⚪ Not Started |
-| **MongoDB** | নোএসকিউএল (NoSQL) ডেটাবেস ডিজাইন, কুয়েরি এবং Mongoose ODM | [`/MongoDB`](./MongoDB/) | ⚪ Not Started |
-| **React** | ফ্রন্টএন্ড ইউজার ইন্টারফেস, কম্পোনেন্ট আর্কিটেকচার এবং স্টেট ম্যানেজমেন্ট | [`/React`](./React/) | ⚪ Not Started |
+| প্রযুক্তি ট্র্যাক | বিবরণ (Description) | নোটস ডিরেক্টরি | প্রস্তুতকৃত লেসন সংখ্যা | স্ট্যাটাস |
+|---|---|:---:|:---:|:---:|
+| **Node.js** | সার্ভার-সাইড রানটাইম, V8 ইঞ্জিন, Streams, Event Loop এবং কোর মডিউল | [`/Node.js`](./Node.js/) | ৮টি লেসন | 🟢 Active |
+| **Express.js** | ফ্লেক্সিবল ওয়েব ফ্রেমওয়ার্ক, মিডলওয়্যার, MVC, Routing, Auth ও Uploads | [`/Express.js`](./Express.js/) | ১১টি লেসন | 🟢 Active |
+| **MongoDB** | NoSQL ডেটাবেস, BSON, Compass, Atlas কানেকশন ও Mongoose ODM | [`/MongoDB`](./MongoDB/) | ৩টি লেসন | 🟢 Active |
+| **JavaScript** | ভাষা ফান্ডামেন্টালস, Functions, Closures এবং Asynchronous JS | [`/JavaScript`](./JavaScript/) | ফাউন্ডেশন | 🟡 Roadmap |
+| **React** | ফ্রন্টএন্ড UI কম্পোনেন্টস, Hooks, State Management ও SPA | [`/React`](./React/) | ফ্রন্টএন্ড | ⚪ Roadmap |
 
-> 📊 সার্বিক শেখার অগ্রগতি দেখতে দেখুন: **[LEARNING-TRACKER.md](./LEARNING-TRACKER.md)**
+> 📊 **সম্পূর্ণ শেখার অগ্রগতি ও স্ট্যাটাস ট্র্যাক করতে দেখুন: [LEARNING-TRACKER.md](./LEARNING-TRACKER.md)**
 
 ---
 
-## 📁 ডিরেক্টরি স্ট্রাকচার (Directory Structure)
+## 📁 ডিরেক্টরি স্ট্রাকচার (Repository Folder Structure)
 
 ```text
 Notes/
 │
-├── README.md                     # রিপোজিটরি পরিচিতি ও নেভিগেশন
-├── LEARNING-TRACKER.md           # ট্র্যাকার: শেখার সামগ্রিক অগ্রগতি
+├── README.md                                # রিপোজিটরি ওভারভিউ ও নেভিগেশন হাব
+├── LEARNING-TRACKER.md                      # কেন্দ্রীয় লার্নিং ট্র্যাকার
 │
-├── JavaScript/                   # JavaScript ফান্ডামেন্টালস ও অ্যাডভান্সড টপিক
-│   ├── 01-fundamentals/
-│   └── 02-functions/
+├── Node.js/                                 # Node.js Core Architecture
+│   ├── README.md
+│   ├── 01-introduction/
+│   ├── 02-installation-and-repl/
+│   ├── 03-first-server-and-core-modules/
+│   ├── 04-request-response-routing/
+│   ├── 05-streams-buffers-parsing/
+│   ├── 06-event-loop-architecture/
+│   ├── 07-npm-and-tools/
+│   └── 08-debugging-guide/
 │
-├── Node.js/                      # Node.js রানটাইম ও ব্যাকএন্ড ইঞ্জিনিয়ারিং
-│   ├── README.md                 # Node.js মডিউল ওভারভিউ
-│   ├── 01-introduction/          # লেকচার ০১: পরিচিতি ও কার্যপ্রণালী
-│   ├── 02-installation-and-repl/ # লেকচার ০২: ইনস্টলেশন ও আরইপিএল
-│   └── 03-event-loop/            # লেকচার ০৩: ইভেন্ট লুপ ও অ্যাসিনক্রোনাস আর্কিটেকচার
+├── Express.js/                              # Express.js Web Framework & APIs
+│   ├── README.md
+│   ├── 01-introduction/
+│   ├── 02-middleware-and-routing/
+│   ├── 03-static-files-and-tailwind/
+│   ├── 04-template-engines-ejs/
+│   ├── 05-mvc-architecture/
+│   ├── 06-dynamic-routes-params/
+│   ├── 07-crud-update-delete/
+│   ├── 08-sessions-and-cookies/
+│   ├── 09-authentication-and-security/
+│   ├── 10-file-upload-multer/
+│   └── 11-async-client-requests-json/
 │
-├── Express.js/                   # Express.js ওয়েব ফ্রেমওয়ার্ক ও এপিআই
+├── MongoDB/                                 # MongoDB & Mongoose Database
+│   ├── README.md
+│   ├── 01-databases-sql-vs-nosql/
+│   ├── 02-mongodb-fundamentals-crud/
+│   └── 03-mongoose-odm/
+│
+├── JavaScript/                              # JavaScript Foundation
 │   └── README.md
 │
-├── MongoDB/                      # MongoDB ডেটাবেস ও Mongoose
-│   └── README.md
-│
-└── React/                        # React ফ্রন্টএন্ড লাইব্রেরি
+└── React/                                   # React Frontend
     └── README.md
 ```
 
 ---
 
-## 🎯 নোটের স্ট্যান্ডার্ড ও লেখার নিয়মাবলী (Documentation Standards)
+## 🎯 নোটের বৈশিষ্ট্য ও লেখার মানদণ্ড (Documentation Standards)
 
-এই রিপোজিটরির প্রতিটি লেসন নিম্নলিখিত মানদণ্ড অনুযায়ী প্রস্তুত:
-
-1. **সহজ ও প্রাঞ্জল বাংলা:** তত্ত্ব ও কনসেপ্টগুলো সহজে বোঝার জন্য বাংলায় ব্যাখ্যা, তবে সমস্ত টেকনিক্যাল টার্ম (যেমন: Runtime, Event Loop, Non-blocking I/O, Callback) ইংরেজিতে রাখা হয়েছে।
-2. **গভীর ও নির্ভুল কনসেপ্ট:** শুধু সারফেস লেভেল নয়, 'কী', 'কেন' এবং 'কীভাবে কাজ করে' তার অভ্যন্তরীণ আর্কিটেকচার আলোচনা করা হয়েছে।
-3. **হাতে-কলমে কোড উদাহরণ:** প্রতিটি লেসনে কার্যকর ও পরিষ্কার কোড স্নিপেট এবং টার্মিনাল আউটপুট যুক্ত।
-4. **সাধারণ ভুলসমূহ (Common Mistakes):** নতুনরা যে সকল সাধারণ ভুলের সম্মুখীন হয় এবং সেগুলো এড়ানোর উপায়।
-5. **ভবিষ্যতের রিভিশন উপযোগিতা:** পরীক্ষার আগে বা ইন্টারভিউ প্রস্তুতির সময় দ্রুত রিভিশন দেওয়ার মতো সারসংক্ষেপ ও স্ব-মূল্যায়ন প্রশ্নাবলী।
-
----
-
-## 📌 কন্ট্রিবিউশন ও আপডেট রুলস
-
-- যেকোনো নতুন লেসনের সাথে অবশ্যই `LEARNING-TRACKER.md` আপডেট করতে হবে।
-- প্রতিটি টপিকের কোড অবশ্যই নিজে রান করে আউটপুট যাচাই করা হয়েছে।
-- মূল শেখার উপকরণসমূহ (Notes/Materials) বজায় রেখে সেগুলোকে প্রফেশনাল মানে রূপান্তর করা হয়েছে।
+1. **সহজ ও প্রাঞ্জল বাংলা:** কঠিন কনসেপ্টগুলোকে সহজ ভাষায় ব্যাখ্যা করা হয়েছে, তবে সমস্ত টেকনিক্যাল টার্ম (যেমন: Runtime, Event Loop, Non-blocking I/O, Streams, Middleware, ORM/ODM) ইংরেজিতে রাখা হয়েছে।
+2. **আর্কিটেকচার ডায়াগ্রাম ও চার্ট:** প্রতিটি মডিউলে ডেটা প্রবাহ এবং ইন্টারনাল ওয়ার্কফ্লো চিত্রায়িত করতে ASCII এবং Mermaid ডায়াগ্রাম যুক্ত।
+3. **প্র্যাকটিক্যাল কোড ও আউটপুট:** প্রতিটি লেসনের কোড সিনট্যাক্স-হাইলাইটেড এবং টার্মিনাল আউটপুটসহ সংকলিত।
+4. **কমন ভুল ও প্রতিকার (Common Mistakes):** নতুনদের সম্ভাব্য ভুলগুলো চিহ্নিত করে আগাম সতর্কবার্তা যুক্ত।
+5. **ভবিষ্যতের রিভিশন প্রস্তুতি:** প্রতিটি চ্যাপ্টারে কুইক সামারি এবং ইন্টারভিউ উপযোগী স্ব-মূল্যায়ন প্রশ্নাবলী সংযুক্ত।

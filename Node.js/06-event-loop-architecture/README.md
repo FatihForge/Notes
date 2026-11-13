@@ -1,0 +1,403 @@
+# 06. Event Loop ডিপ ডাইভ, Libuv ও অ্যাসিনক্রোনাস আর্কিটেকচার (Event Loop Deep Dive & libuv Architecture)
+
+---
+
+## 🧭 দ্রুত নেভিগেশন (Quick Navigation)
+- [⬅️ মূল রিপোজিটরি সূচিপত্র](../../README.md)
+- [📊 লার্নিং ট্র্যাকার](../../LEARNING-TRACKER.md)
+- [📁 Node.js ট্র্যাক](../../Node.js/README.md)
+
+---
+
+## Introduction
+
+আপনার মনে কি কখনো প্রশ্ন জেগেছে— Node.js মাত্র একটি সিঙ্গেল থ্রেড (Single Thread) ব্যবহার করে কীভাবে একসাথে হাজার হাজার ইউজার ও রিকোয়েস্ট সামলায়, যেখানে অন্যান্য ল্যাঙ্গুয়েজ থমকে যায়?
+
+এই রহস্যের মূল চাবিকাঠি হলো **Event Loop** এবং **Asynchronous Non-blocking I/O Architecture**। অনেক সময় ডেভেলপাররা কলব্যাক ফাংশনের ভেতর কোড লিখতে গিয়ে গোলকধাঁধায় পড়ে যান। আজকের এই গভীর পাঠ শেষে আপনি Node.js-এর ভেতরের ইঞ্জিন কীভাবে চলে, v8 এবং Libuv কীভাবে একসাথে কাজ করে এবং কীভাবে সঠিক Asynchronous কোড লিখতে হয় তা পুরোপুরি বুঝতে পারবেন।
+
+By the end of this lesson, you will be able to:
+
+* **Analyze** Node.js-এর Event-Driven Architecture এবং Single-Threaded এক্সিকিউশন প্রক্রিয়া।
+* **Distinguish** Google v8 Engine এবং Libuv Library-র সুনির্দিষ্ট দায়িত্ব ও পার্থক্য।
+* **Trace** Node.js Runtime-এ কীভাবে Synchronous ও Asynchronous কোড ধাপে ধাপে এক্সিকিউট হয়।
+* **Categorize** Event Loop-এর ৬টি Phase এবং তাদের কার্যকারিতার অগ্রাধিকার (Priority)।
+* **Refactor** Blocking Synchronous কোডকে (যেমন: `writeFileSync`) Non-blocking Asynchronous কোডে রূপান্তর করা।
+
+## এই ক্লাসে কী কী শেখানো হয়েছে?
+
+এই ক্লাসে Node.js-এর ভেতরের মূল মেকানিজম বা ইন্টারনাল ওয়ার্কিং মেকানিজম বিস্তারিত আলোচনা করা হয়েছে। শিক্ষক প্রশান্ত স্যার কোড সরাসরি রান করার আগে আর্কিটেকচারাল কনসেপ্টগুলো স্পষ্ট করেছেন।
+
+### মূল আলোচনার বিষয়বস্তু:
+
+1. **Event Driven Programming:** ইভেন্ট, লিসনার, কিউ (Queue) এবং হ্যান্ডলার কীভাবে কাজ করে।
+2. **Single Threaded Nature:** Single Unit of Execution কী এবং Node.js কেন সিঙ্গেল থ্রেডেড।
+3. **v8 Engine vs Libuv:** JavaScript এক্সিকিউশন ইঞ্জিন এবং C++ আসিনক্রোনাস লাইব্রেরির ভূমিকা।
+4. **Node.js Runtime Flow:** Synchronous কোড এবং Asynchronous I/O কোডের এক্সিকিউশন ধাপ।
+5. **Event Loop Phases &amp; Priority:** Event Loop-এর ৬টি ধাপ এবং Timers, Poll, Check ইত্যাদি ফেইজের অগ্রাধিকার।
+6. **Blocking vs Non-blocking Code:** `writeFileSync` বনাম `writeFile`\-এর পার্থক্য এবং সঠিক Response Handling।
+
+flowchart
+
+Recommended · Mind Map
+
+### Overview of Node.js Async Architecture
+
+A visual mind map breaking down the main components of Node.js Runtime including v8, Libuv, Event Loop, Event Queue, and Worker Threads.
+
+## Event Driven Programming (ইভেন্ট ড্রিভেন প্রোগ্রামিং)
+
+### What is it? (ইভেন্ট ড্রিভেন প্রোগ্রামিং কী?)
+
+Event-Driven Programming হলো এমন একটি প্রোগ্রামিং প্যারাডাইম (Paradigm) বা কাজের ধরণ, যেখানে কোডের এক্সিকিউশন নির্ভর করে কোনো 'ইভেন্ট' বা ঘটনার ওপর। কোনো ইভেন্ট ঘটলে (যেমন: মাউস ক্লিক, ডাটা আসা বা রিকোয়েস্ট শেষ হওয়া) তার প্রতিক্রিয়া হিসেবে নির্দিষ্ট কোড বা Callback Function রান করে।
+
+### Why is it used? (কেন এটি ব্যবহার করা হয়?)
+
+প্রথাগত প্রোগ্রামে কোড ওপর থেকে নিচে পরপর একটার পর একটা চলে। কিন্তু ওয়েব সার্ভারে ইউজার কখন ডাটা পাঠাবে বা বাটনে ক্লিক করবে তার সময় নির্দিষ্ট থাকে না। ইভেন্ট-ড্রিভেন আর্কিটেকচার সার্ভারকে অনবরত অপেক্ষা না করিয়ে দক্ষতার সাথে রেসপন্স করতে সাহায্য করে।
+
+### How does it work? (কীভাবে কাজ করে?)
+
+ইভেন্ট ড্রিভেন সিস্টেমে প্রধানত ৪টি উপাদান থাকে:
+
+1. **Event:** কোনো ঘটনা ঘটে (যেমন: ডাটা চাঙ্ক আসা)।
+2. **Event Listener:** যা ইভেন্টের জন্য কান পেতে বসে থাকে (যেমন: `req.on('data')`)।
+3. **Event Queue:** ইভেন্ট ঘটলে তার কলব্যাক ফাংশন লাইনে বা Queue-তে এসে দাঁড়ায়।
+4. **Event Handler:** Event Loop Queue থেকে কলব্যাক নিয়ে Execution-এর জন্য v8-এ পাঠায় এবং প্রতিক্রিয়া দেখায়।
+
+### When is it used?
+
+Node.js-এ HTTP Server তৈরি, Stream নিয়ে কাজ করা (`data`, `end` ইভেন্ট) এবং Client UI Event সামলানোর জন্য এটি ব্যবহার করা হয়।
+
+### Important Methods &amp; Syntax
+
+```
+// Data event listen করা
+req.on('data', (chunk) =&gt; {
+    body.push(chunk);
+});
+
+// Stream শেষ হওয়ার event listen করা
+req.on('end', () =&gt; {
+    // Process body data
+});
+
+```
+
+### Common Mistakes
+
+ইভেন্ট লিসনারের ভেতরে পাস করা Callback Function সাথে সাথে এক্সিকিউট হয় না। কিন্তু অনেকে মনে করেন `req.on()` লেখার সাথে সাথেই ভেতরের কোড রান হয়ে যাবে, যা একটি ভুল ধারণা।
+
+### Mental Model (বাস্তব জীবনের উদাহরণ)
+
+স্কুলের ছুটির ঘণ্টার কথা চিন্তা করুন। শিক্ষার্থীরা শ্রেণীকক্ষে বসে লিসেন করছে (Event Listener)। ঘণ্টা বাজার ঘটনাটি হলো **Event**। ঘণ্টা বাজার সাথে সাথে ব্যাগ গুছিয়ে বের হয়ে যাওয়া হলো **Event Handler / Response**। ঘন্টা না বাজলে কিন্তু কেউ প্রতিক্রিয়া দেখায় না।
+
+stacked\_bar\_chart
+
+Recommended · Infographic
+
+### Event-Driven Flow Breakdown
+
+An infographic illustrating the lifecycle of an Event: Event Trigger -&gt; Event Listener -&gt; Event Queue -&gt; Event Loop -&gt; Event Handler Execution.
+
+## Single-Threaded Architecture এবং Worker Threads
+
+### What is it? (সিঙ্গেল থ্রেডেড আর্কিটেকচার কী?)
+
+Single-Threaded এর অর্থ হলো Node.js-এর কাছে মূল কাজ সম্পাদন করার জন্য মাত্র একটি **Main Thread** বা **Single Unit of Execution** থাকে। এটি একবারে ঠিক একটিমাত্র কাজই করতে পারে।
+
+### Why is it used? (কেন Node.js সিঙ্গেল থ্রেড ব্যবহার করে?)
+
+বহু থ্রেড (Multi-threading) সামলানো বেশ জটিল এবং এতে মেমোরির অপচয় বেশি হয় (Context Switching Overheads)। Single-Threaded আর্কিটেকচার অত্যন্ত হালকা এবং ফাস্ট। তবে প্রশ্ন উঠতে পারে: *একটি মাত্র থ্রেড দিয়ে ভারী কাজ বা ফাইল রিড কীভাবে হয়?*
+
+### How does it work? (ভারী কাজ সামলানোর উপায়)
+
+Node.js-এর মেইন থ্রেড (Event Loop) একা কাজ করলেও এর পেছনে থাকে **Libuv** লাইব্রেরির **Thread Pool (Worker Threads)**।
+
+* **Main Thread (Manager):** মেইন কোড এক্সিকিউট করে। ভারী বা I/O (Input/Output) কাজ এলে (যেমন: ফাইল রাইট, ডাটাবেস কোয়েরি) তা Worker Thread-কে দিয়ে দেয়।
+* **Worker Threads (Workers):** ব্যাকগ্রাউন্ডে ভারী কাজগুলো সমান্তরালে (Parallelly) শেষ করে এবং কাজ শেষে ফলাফল Event Queue-তে ফেরত পাঠায়।
+
+### Code Logic Explanation
+
+```
+// মেইন থ্রেড ফাইল রাইটের কাজ Libuv Worker Thread-কে হ্যান্ডওভার করে দেয়
+fs.writeFile('user.txt', data, (err) =&gt; {
+    console.log("Data written successfully!");
+});
+
+```
+
+মেইন থ্রেড `fs.writeFile` পেয়েই তা Worker Thread-কে দিয়ে দেয় এবং পরবর্তী কোডে চলে যায়। ফাইল রাইট শেষ হলে কলব্যাকটি মেইন থ্রেডে এসে রান করে।
+
+### Mental Model (বাস্তব জীবনের উদাহরণ)
+
+চিন্তা করুন একজন রেস্তোরাঁর ম্যানেজার (Main Thread)। তিনি নিজে রান্না করেন না। অর্ডার নিয়ে শেফদের (Worker Threads) জানিয়ে দেন। শেফরা ব্যাকগ্রাউন্ডে রান্না করতে থাকে, আর ম্যানেজার নতুন কাস্টমারের অর্ডার নিতে থাকেন।
+
+tablet
+
+Recommended · Slide Deck
+
+### Single Thread &amp; Worker Thread Offloading
+
+A slide deck showing how Node's main JavaScript thread offloads I/O tasks to Libuv's C++ worker pool without blocking incoming requests.
+
+## v8 Engine বনাম Libuv Library
+
+Node.js Runtime মূলত দুটি শক্তিশালী পিলারের ওপর দাঁড়িয়ে আছে: **v8 Engine** এবং **Libuv Library**। এদের কাজ ও পার্থক্য জানা অত্যন্ত জরুরি।
+
+### Google v8 Engine
+
+* **What is it:** Google Chrome থেকে সংগৃহীত একটি ওপেন সোর্স হাই-পারফরম্যান্স JavaScript Engine।
+* **Purpose:** এটি JavaScript কোডকে সরাসরি Native Machine Code (কম্পিউটারের বোঝার উপযোগী কোড)-এ রূপান্তর ও এক্সিকিউট করে।
+* **Platform Dependency:** v8 প্রতিটা অপারেটিং সিস্টেমের (macOS, Windows, Linux) জন্য আলাদাভাবে লেখা থাকে যেন কোড দ্রুত চলে।
+* **Limitation:** v8 কেবল বিশুদ্ধ JavaScript বোঝে। ফাইল সিস্টেম (FS) বা নেটওয়ার্কিং-এর মতো আসিনক্রোনাস কাজ এটি নিজে সরাসরি করতে পারে না।
+
+### Libuv Library
+
+* **What is it:** C++ দিয়ে লেখা একটি মাল্টি-প্ল্যাটফর্ম সাপোর্ট লাইব্রেরি, যা বিশেষভাবে Node.js-এর জন্য তৈরি।
+* **Purpose:** এটি Node.js-কে **Event Loop**, **Worker Thread Pool** এবং **Asynchronous Non-blocking I/O Operations** করার সুবিধা প্রদান করে।
+* **Features:** ফাইল সিস্টেম, নেটওয়ার্কিং, টাইমার—এই সব আসিনক্রোনাস ব্যাকগ্রাউন্ড হ্যান্ডলিং-এর মূল মাস্টার হলো Libuv।
+
+### v8 এবং Libuv-এর তুলনামূলক চিত্র
+
+| বৈশিষ্ট্য           | Google v8 Engine                         | Libuv Library                                        |
+| ------------------- | ---------------------------------------- | ---------------------------------------------------- |
+| **ভাষা**            | C++ / JS                                 | C++                                                  |
+| **প্রধান দায়িত্ব** | JavaScript কোডকে Machine Code-এ রূপান্তর | Async I/O, Event Loop ও Thread Pool পরিচালনা         |
+| **ইভেন্ট লুপ**      | কোনো ইভেন্ট লুপ নিয়ন্ত্রণ করে না        | Event Loop পরিচালনা ও বাস্তবায়ন করে                 |
+| **রোল**             | এক্সিকিউশন ইঞ্জিনের কাজ করে              | সিস্টেম লেভেল I/O ও ব্যাকগ্রাউন্ড টাস্ক পরিচালনা করে |
+
+cards\_star
+
+Recommended · Flashcards
+
+### v8 Engine vs Libuv Comparison
+
+A flashcard set comparing core roles, programming languages, and responsibilities of Google v8 Engine and Libuv Library.
+
+## Node.js Runtime এবং Async Execution Flow
+
+Node.js-এ Asynchronous কোড কীভাবে রান হয়, তা একটি উদাহরণের সাহায্যে বোঝা যাক।
+
+### কোড উদাহরণ:
+
+```
+console.log("Starting Node.js");
+
+db.query("SELECT * FROM users", (err, result) =&gt; {
+    console.log("Query Executed");
+});
+
+console.log("Before Query Result");
+
+```
+
+### Step-by-Step Execution Flow:
+
+1. **Step 1:** v8 Engine প্রথম লাইন রান করে `console.log("Starting Node.js")` আউটপুট দেখায়।
+2. **Step 2:** v8 ইঞ্জিনে `db.query` আসে। যেহেতু এটি একটি Async I/O অপারেশন, v8 এটিকে সাথে সাথে **Libuv**\-এর কাছে হ্যান্ডওভার করে দেয় এবং একটি Callback Function রেজিস্টার করে।
+3. **Step 3:** Libuv তার Worker Thread-এ ডাটাবেস কোয়েরি চালাতে থাকে। v8 কিন্তু থেমে থাকে না! মেইন থ্রেড সামনে এগিয়ে যায় এবং ৩ নম্বর লাইন রান করে `console.log("Before Query Result")` প্রিন্ট করে।
+4. **Step 4:** ব্যাকগ্রাউন্ডে Libuv-এর কোয়েরি সম্পন্ন হলে, তার Callback Function-টি **Event Queue**\-তে এসে জমা হয়।
+5. **Step 5:** Event Loop দেখে যে মেইন Call Stack খালি হয়েছে। তখন সে Event Queue থেকে কলব্যাকটি নিয়ে v8-এ পাঠায় এবং আউটপুটে আসে `"Query Executed"`।
+
+### আউটপুট ক্রম (Actual Output Order):
+
+```
+Starting Node.js
+Before Query Result
+Query Executed
+
+```
+
+### গুরুত্বপূর্ণ সত্য:
+
+কোডে যেভাবে একটার পর একটা লাইন লেখা থাকে (Sequence), Asynchronous কাজের ক্ষেত্রে আউটপুট কিন্তু সেই একই সিকোয়েন্সে নাও আসতে পারে!
+
+subscriptions
+
+Recommended · Video
+
+### Async Execution Flow Walkthrough
+
+A detailed video-style explanation walking through how asynchronous DB queries pass from v8 to Libuv, to Event Queue, and back to v8 via Event Loop.
+
+## Event Loop Phases এবং Priority System
+
+### Event Loop Phases (ইভেন্ট লুপের বিভিন্ন ধাপ)
+
+Event Loop কেবল একটি সাধারণ বৃত্তাকার লাইন নয়; এর সুনির্দিষ্ট ৬টি পর্যায় বা Phase রয়েছে। একটি চক্রে (Iteration/Tick) এটি পর্যায়ক্রমে কাজগুলো করে:
+
+1. **Timers Phase:** `setTimeout()` এবং `setInterval()`\-এর কলব্যাকগুলো এখানে এক্সিকিউট হয়।
+2. **Pending Callbacks Phase:** পূর্ববর্তী চক্র থেকে বিলম্বিত হওয়া I/O কলব্যাকগুলো এখানে রান করে।
+3. **Idle, Prepare Phase:** Node.js ইন্টারনালি নিজের ব্যবহারের জন্য এটি ব্যবহার করে।
+4. **Poll Phase:** নতুন I/O ইভেন্ট গ্রহণ করে এবং ফাইল রাইটিং/পড়া, ডাটাবেস বা নেটওয়ার্ক সংশ্লিষ্ট প্রায় সকল কলব্যাক রান করে।
+5. **Check Phase:** `setImmediate()` ফাংশনের কলব্যাকগুলো এখানে এক্সিকিউট হয়।
+6. **Close Callbacks Phase:** কানেকশন ক্লোজ করা বা রিসোর্স ক্লিন-আপ করা (যেমন: `socket.on('close')`) সংক্রান্ত কলব্যাক এখানে শেষ হয়।
+
+### Microtask Queue (বিশেষ অগ্রাধিকার)
+
+সাধারণ Event Queue-এর বাইরে আরেকটি কিউ থাকে— **Microtask Queue** (যা `Promise.then()` এবং `process.nextTick()` হ্যান্ডেল করে)। Microtask Queue-এর অগ্রাধিকার (Priority) Event Loop-এর যে কোনো ফেইজের চেয়ে বেশি! Event Loop যেকোনো ফেইজে যাওয়ার আগে Microtask Queue খালি করে।
+
+### Mental Model (ফ্লাইট বোর্ডিং বা ট্রেনের টিকিটের লাইন)
+
+ফ্লাইটের বোর্ডিং লাইনের কথা ভাবুন। সবাই লাইনে দাঁড়িয়েছে (Event Queue), কিন্তু বিজনেস ক্লাসের প্যাসেঞ্জার বা ইমার্জেন্সি টিকিটধারীরা (Timers বা Microtasks) অর্থনীতি ক্লাসের (General Poll Phase) আগে সুযোগ পায়। ঠিক তেমনই, Event Loop অগ্রাধিকার ভিত্তিতে কাজ এক্সিকিউট করে।
+
+stacked\_bar\_chart
+
+Recommended · Infographic
+
+### 6 Phases of Node.js Event Loop
+
+An infographic diagram presenting the 6 Event Loop phases in sequential order: Timers -&gt; Pending Callbacks -&gt; Idle/Prepare -&gt; Poll -&gt; Check -&gt; Close Callbacks.
+
+## Synchronous vs Asynchronous Code এবং Non-Blocking I/O
+
+### Synchronous (Blocking) Code
+
+Synchronous কোড কাজ শেষ না হওয়া পর্যন্ত পুরো মেইন থ্রেডকে আটকে (Block করে) রাখে।
+
+* **উদাহরণ:** `fs.writeFileSync()` বা `fs.readFileSync()`
+* **সমস্যা:** ফাইল রাইট করতে যদি ২ সেকেন্ড সময় লাগে, তবে ওই ২ সেকেন্ড পুরো Node.js সার্ভার ব্লক থাকবে। অন্য কোনো ইউজার হিট করলেও সার্ভার রেসপন্ড করবে না।
+
+### Asynchronous (Non-Blocking) Code
+
+Asynchronous কোড মেইন থ্রেডকে ব্লক না করে কাজগুলোকে Libuv Worker Thread-এ পাঠিয়ে দেয়।
+
+* **উদাহরণ:** `fs.writeFile()` বা `fs.readFile()`
+* **সুবিধা:** ফাইল রাইট ব্যাকগ্রাউন্ডে হতে থাকে, আর সার্ভার হাজার হাজার নতুন রিকোয়েস্ট সামলাতে পারে।
+
+### কোডের সাধারণ ভুল ও তার সমাধান (Response Order Issue)
+
+আমরা ক্লাসে দেখেছি, Asynchronous কলব্যাকের বাইরে `res.end()` লিখলে ফাইল রাইট শেষ হওয়ার আগেই রেসপন্স চলে যায় এবং রেজাল্ট `undefined` দেখায় বা সার্ভার ক্র্যাশ করে!
+
+#### ভুল পদ্ধতি (Incorrect):\*\*
+
+```
+fs.writeFile('user.txt', data, (err) =&gt; {
+    // ফাইল রাইট হচ্ছে ব্যাকগ্রাউন্ডে
+});
+// ফাইল রাইট শেষ হওয়ার আগেই এটি আগে এক্সিকিউট হয়ে যায়!
+res.statusCode = 302;
+res.setHeader('Location', '/');
+return res.end(); 
+
+```
+
+#### সঠিক পদ্ধতি (Correct - Non-blocking Response Inside Callback):\*\*
+
+```
+fs.writeFile('user.txt', data, (err) =&gt; {
+    // কাজ সফলভাবে শেষ হলেই কেবল ইউজারকে রেসপন্স পাঠাব
+    res.statusCode = 302;
+    res.setHeader('Location', '/');
+    return res.end();
+});
+
+```
+
+### Mental Model (এটিএম থেকে টাকা ও দই কেনা)
+
+মা আপনাকে বললেন, "এটিএম কার্ড নিয়ে ব্যাংক থেকে টাকা তোলো, আর টাকা তোলা হলে আসার সময় দোকান থেকে দই নিয়ে এসো।" টাকা না তোলা পর্যন্ত কি আপনি দই কিনতে পারবেন? না! ফাইল রাইট না হওয়া পর্যন্ত রেসপন্স পাঠানোও তেমনই একটি বিষয়—কাজ শেষ হওয়ার কলব্যাকের পরেই কেবল রেসপন্স দিতে হবে।
+
+audio\_magic\_eraser
+
+Recommended · Audio
+
+### Blocking vs Non-Blocking I/O Handling
+
+An audio discussion contrasting synchronous blocking operations with asynchronous non-blocking operations and explaining why res.end must be inside callbacks.
+
+## Important Modules, Syntax, and Common Mistakes
+
+### Important Modules / Packages
+
+* **fs** **(File System Module):** ফাইল রিড ও রাইট করার জন্য ব্যবহৃত নোড বিল্ট-ইন মডিউল।
+  * `fs.writeFileSync(file, data)` \- Synchronous (Blocking - ব্যবহার এড়ানো উচিত)।
+  * `fs.writeFile(file, data, callback)` \- Asynchronous (Non-blocking - সঠিক পদ্ধতি)।
+
+### Important Syntax &amp; Keywords
+
+* **req.on('data', callback)** **:** ইনকামিং ডাটা চাঙ্ক গ্রহণ করতে ব্যবহৃত লিসনার।
+* **req.on('end', callback)** **:** ডাটা স্ট্রিম আসা শেষ হলে ট্রিগার হওয়া ইভেন্ট লিসনার।
+* **setImmediate(callback)** **:** ইভент লুপের Check Phase-এ দ্রুত রান করার নির্দেশ।
+
+### Common Beginner Mistakes
+
+1. **writeFileSync** **ব্যবহার করা:** প্রোডাক্টশন কোডে `writeFileSync` ব্যবহার করলে সার্ভারের পারফরম্যান্স ধসে পড়ে। সবসময় Async `writeFile` ব্যবহার করা উচিত।
+2. **Callback-এর বাইরে Response পাঠানো:** Asynchronous কাজ (যেমন `fs.writeFile`) শেষ হওয়ার আগেই `res.end()` কল করে ফেলা।
+3. **Multiple Response Sent Error:** একাধিকবার `res.end()` কল করা বা `return res.end()` না লেখা, যার ফলে `Cannot set headers after they are sent to the client` এরর দিয়ে সার্ভার ক্র্যাশ করে।
+
+cards\_star
+
+Recommended · Flashcards
+
+### Node.js Async Pitfalls &amp; Syntax
+
+Flashcards covering key asynchronous Node.js syntax, fs methods, and how to avoid common pitfalls like duplicate res.end calls.
+
+## Quick Revision and Study Guide
+
+## Quick Revision
+
+* **Node.js** সিঙ্গেল থ্রেডেড হলেও **Libuv**\-এর Worker Thread Pool ব্যবহার করে ভারী I/O কাজ সম্পাদন করে।
+* **v8 Engine** জাভাস্ক্রিপ্টকে মেশিন কোডে রূপান্তর করে, আর **Libuv** ইভেন্ট লুপ ও আসিনক্রোনাস কাজ পরিচালনা করে।
+* **Event-Driven Architecture** ইভেন্ট, লিসনার, কিউ এবং হ্যান্ডলারের মাধ্যমে কাজ করে।
+* **Event Loop**\-এর ৬টি ধাপ রয়েছে, যার মধ্যে **Timers** এবং **Poll** Phase প্রধান। **Microtask Queue** (Promises)-এর অগ্রাধিকার সবচেয়ে বেশি।
+* ফাইল রাইট বা ডাটাবেসের কাজ Asynchronous মেথডে করা উচিত এবং রেসপন্স কলব্যাকের ভেতর থেকেই পাঠানো উচিত।
+
+## Important Methods / Functions
+
+* `fs.writeFile(path, data, callback)` — ফাইল আসিনক্রোনাসভাবে রাইট করে।
+* `req.on('data', cb)` — ডাটা চাঙ্ক গ্রহণ করে।
+* `req.on('end', cb)` — ডাটা স্ট্রিম শেষ হলে কলব্যাক চলায়।
+* `setImmediate(cb)` — Check phase-এ কলব্যাক এক্সিকিউট করে।
+
+## Important Modules / Packages
+
+* `fs` — Built-in Node.js মডিউল যা ফাইল সিস্টেম অপারেশন পরিচালনা করে।
+
+## Important Terms
+
+* **Single-Threaded:** একটিমাত্র থ্রেডে কোড এক্সিকিউট করার ব্যবস্থা।
+* **Non-Blocking I/O:** থ্রেডকে আটকে না রেখে ব্যাকগ্রাউন্ডে ইনপুট/আউটপুট কাজ সম্পন্ন করা।
+* **Callback:** কোনো কাজ শেষ হওয়ার পর এক্সিকিউশনের জন্য পাঠানো ফাংশন।
+* **Event Queue:** আসিনক্রোনাস কাজের কলব্যাকগুলো যেখানে এক্সিকিউশনের জন্য লাইনে দাঁড়ায়।
+
+## Practice Questions
+
+1. Node.js সিঙ্গেল থ্রেডেড হওয়া সত্ত্বেও কীভাবে একাধিক কাজ একসাথে বা আসিনক্রোনাসভাবে করতে পারে?
+2. Google v8 Engine এবং Libuv Library-র মধ্যে মূল ৩টি পার্থক্য কী কী?
+3. `fs.writeFileSync()` এবং `fs.writeFile()`\-এর মধ্যে কোনটি ওয়েব সার্ভারের জন্য উপযুক্ত এবং কেন?
+4. Event Loop-এর বিভিন্ন ফেইজগুলোর নাম লিখুন এবং Timers ও Poll Phase-এর কাজ সংক্ষেপে ব্যাখ্যা করুন।
+5. আসিনক্রোনাস ফাইল রাইট করার সময় `res.end()` কলব্যাকের বাইরে লিখলে কী ধরনের সমস্যা তৈরি হয়?
+
+tablet
+
+Recommended · Slide Deck
+
+### Node.js Core Concepts Summary Deck
+
+A comprehensive summary slide deck highlighting key terms, runtime architecture, Event Loop priority rules, and Async best practices.
+
+## Summary
+
+Node.js-এর আসল ক্ষমতা এর **Asynchronous Non-blocking Event-Driven Architecture**\-এর মধ্যে নিহিত। মেইন থ্রেডকে সর্বদাই ফ্রি রেখে ব্যাকগ্রাউন্ডের ভারী কাজগুলো Libuv Worker Pool-এ পাঠিয়ে দেওয়াই হলো Node.js-এর দ্রুত গতির রহস্য।
+
+### Key Takeaways:
+
+* Node.js এক্সিকিউশনের জন্য **Single-Threaded**, কিন্তু I/O হ্যান্ডলিং-এর জন্য Libuv-এর সাহায্যে **Multi-threaded** এর সুবিধা পায়।
+* **v8** জাভাস্ক্রিপ্ট চালায়, **Libuv** ইভেন্ট লুপ পরিচালনা করে।
+* কখনো ব্লক করার মতো Synchronous কোড (`writeFileSync`) রান করবেন না।
+* আসিনক্রোনাস কাজের ফলাফল আসার পরই কেবল কলব্যাকের ভেতর থেকে ইউজারকে `res.end()` দিয়ে রেসপন্স জানাবেন।
+
+### ❓ স্ব-মূল্যায়ন ও ইন্টারভিউ প্রশ্নাবলী (Interview & Review Questions)
+
+---
+
+## 🔗 তথ্যসূত্র ও গুরুত্বপূর্ণ লিংক (References)
+- [Node.js Official Documentation](https://nodejs.org/en/docs/)
+- [Express.js Official Guide](https://expressjs.com/)
+- [MongoDB Manual](https://www.mongodb.com/docs/manual/)
+- [Mongoose Documentation](https://mongoosejs.com/docs/)
+- [MDN Web Docs](https://developer.mozilla.org/en-US/)
+
+---
+**পরবর্তী লেসন পড়ার জন্য আপনার ট্র্যাক সূচিপত্রে ফিরে যান:** [⬅️ Back to Node.js Index](../../Node.js/README.md)

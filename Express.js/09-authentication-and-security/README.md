@@ -1,0 +1,389 @@
+# 09. অথেনটিকেশন, পাসওয়ার্ড হ্যাশিং ও রুট প্রটেকশন (Authentication, bcrypt Password Hashing & Route Protection)
+
+---
+
+## 🧭 দ্রুত নেভিগেশন (Quick Navigation)
+- [⬅️ মূল রিপোজিটরি সূচিপত্র](../../README.md)
+- [📊 লার্নিং ট্র্যাকার](../../LEARNING-TRACKER.md)
+- [📁 Express.js ট্র্যাক](../../Express.js/README.md)
+
+---
+
+## সূচনা ও শিখনফল
+
+আপনি কি জানেন, বিশ্বের সবচেয়ে বড় সাইবার অ্যাটাকগুলোর বেশিরভাগই ঘটে শুধুমাত্র দুর্বল পাসওয়ার্ড এবং নিরাপত্তাহীন অথেনটিকেশনের কারণে? আপনি যদি আপনার এক্সপ্রেস অ্যাপ্লিকেশনে ইউজারের পাসওয়ার্ড প্লেন টেক্সট (Plain Text) হিসেবে ডেটাবেসে সেভ করে রাখেন, তবে আপনি অনাকাঙ্ক্ষিত হ্যাকিং ও ডেটা লিকের জন্য নিজের দরজাই খোলা রাখছেন!
+
+একটি পেশাদার MERN Stack অ্যাপ্লিকেশন তৈরি করতে হলে কেবল ইউজার ইন্টারফেস বানালেই চলে না, বরং তার ব্যাক-এন্ডকে বুলেটপ্রুফ সিকিউরিটি দিতে হয়। এই পাঠে আমরা শিখব কীভাবে আপনার Express.js অ্যাপ্লিকেশনকে নিরাপদ, সুসংগঠিত এবং রোল-ভিত্তিক পার্সোনালাইজড অ্যাপে রূপান্তর করা যায়।
+
+**এই পাঠের মূল শিখনফল:**
+
+* **Authentication** এবং **Authorization**\-এর মধ্যে মৌলিক পার্থক্য এবং বাস্তব জীবনের উদাহরণসহ এদের ব্যবহার বুঝতে পারা।
+* `express-validator` প্যাকেজ ব্যবহার করে সার্ভার-সাইডে ফর্ম ভ্যালিডেশন ও সানাইটাইজেশন তৈরি করতে পারা।
+* `bcryptjs` ব্যবহার করে ইউজারের পাসওয়ার্ড ওয়ান-ওয়ে হ্যাশিংয়ের (One-Way Hashing) মাধ্যমে নিরাপদভাবে ডেটাবেসে সংরক্ষণ করতে পারা।
+* `bcrypt.compare()` ব্যবহার করে সেকিউর লগইন ফ্লো এবং `req.session`\-এর মাধ্যমে ইউজার সেশন ম্যানেজ করা।
+* ইউজারের রোল (`guest` vs `host`) অনুযায়ী ডাইনামিক UI ও ইউজার-স্পেসিফিক ডেটা (যেমন: ইউজার-ভিত্তিক ফেভারিটস লিস্ট) ইমপ্লিমেন্ট করা।
+
+## এই ক্লাসে কী শেখানো হয়েছে এবং মূল ধারণা
+
+### ১. এই ক্লাসে কী শেখানো হয়েছে?
+
+এই লেকচারে মূলত একটি পূর্ণাঙ্গ Auth (Authentication &amp; Authorization) সিস্টেমের ভিত্তি স্থাপন করা হয়েছে। শেখানো মূল বিষয়গুলো হলো:
+
+1. **Authentication বনাম Authorization-এর পার্থক্য**।
+2. **Sign-up UI তৈরি এবং সার্ভার-সাইড ভ্যালিডেশন**।
+3. **Express Validator দিয়ে ইনপুট ফিল্ড যাচাই ও ভুল ডেটা রি-ফিল করা**।
+4. **Mongoose User Model তৈরি ও পাসওয়ার্ড হ্যাশিং (** **bcryptjs** **)**।
+5. **Login Flow ও পাসওয়ার্ড ম্যাচিং (** **bcrypt.compare** **)**।
+6. **Role-based Authorization (** **guest** **বনাম** **host** **) এবং ডাইনামিক নেভিগেশন বার**।
+7. **User-Specific Favorites ফিচার তৈরির জন্য Mongoose** **populate** **মেথডের ব্যবহার**。
+
+---
+
+### ২. Authentication এবং Authorization: সহজ পরিচিতি ও কাজ করার পদ্ধতি
+
+#### ক. Authentication (অথেনটিকেশন): "আপনি কে?"
+
+* **সহজ পরিচয়:** সিস্টেমে প্রবেশের সময় ইউজার যে পরিচয় দিচ্ছে (যেমন: ইমেইল/পাসওয়ার্ড), তা সঠিক ও বৈধ কি না তা যাচাই করাই হলো অথেনটিকেশন।
+* **কেন প্রয়োজন:** ভুয়া একাউন্ট, বট অ্যাটাক বা অনাকাঙ্ক্ষিত ব্যক্তির অনুপ্রবেশ ঠেকিয়ে বৈধ ইউজারের পরিচয় নিশ্চিত করতে এটি ব্যবহৃত হয়।
+* **কীভাবে কাজ করে:** ইউজার তার সাইনআপ বা লগইন তথ্য পাঠায় ➔ সার্ভার তা ডেটাবেসের সাথে যাচাই করে ➔ তথ্য মিললে সিস্টেমে ঢোকার এক্সেস বা সেশন প্রদান করে।
+* **বাস্তব উদাহরণ:** বিমানবন্দর বা কলেজের প্রধান ফটেকে এনআইডি (NID) বা আইডি কার্ড দেখিয়ে নিজের পরিচয় প্রমাণ করা।
+
+#### খ. Authorization (অথরাইজেশন): "আপনার কী কী করার অনুমতি আছে?"
+
+* **সহজ পরিচয়:** সিস্টেমে প্রবেশের পর একজন ইউজার অ্যাপ্লিকেশনের কোন কোন রিসোর্স দেখতে বা পরিবর্তন করতে পারবেন, তা নির্ধারণ করাই হলো অথরাইজেশন।
+* **কেন প্রয়োজন:** সাধারণ ইউজার যেন অ্যাডমিন প্যানেলে ঢুকতে না পারে, বা কোনো গেস্ট ইউজার যেন অন্যের তথ্য এডিট/ডিলেট করতে না পারে।
+* **কীভাবে কাজ করে:** ইউজার ইতিপূর্বে অথেনটিকেটেড হওয়ার পর তার ভূমিকা (Role) যেমন- `admin`, `host`, বা `guest` চেক করে নির্দিষ্ট পেজ বা API রাউটের এক্সেস দেওয়া হয়।
+* **বাস্তব উদাহরণ:** বিমানবন্দরে ঢোকার পর আপনার টিকিটের ক্লাস (ইকোনমি নাকি বিজনেস) অনুযায়ী ভিআইপি লাউঞ্জে ঢোকার অনুমতি পাওয়া।
+
+### 📊 অথেনটিকেশন বনাম অথরাইজেশন ইনফোগ্রাফিক
+> [!NOTE]
+> **আর্কিটেকচার ও কাজের প্রবাহচিত্র (Visual Diagram & Flow):**
+> Authentication এবং Authorization-এর কাজের ধাপ, পার্থক্য এবং বাস্তব জীবনের উদাহরণের একটি ভিজ্যুয়াল ইনফোগ্রাফিক।
+
+## এক্সপ্রেস ভ্যালিডেটর দিয়ে সার্ভার-সাইড ভ্যালিডেশন
+
+### কেন ক্লায়েন্ট-সাইড ভ্যালিডেশন যথেষ্ট নয়?
+
+HTML5 ইনপুট প্রপার্টি (যেমন: `required`, `type="email"`) দিয়ে যে ভ্যালিডেশন করা হয়, তা কেবল ব্রাউজারেই সীমাবদ্ধ। যেকোনো ব্যবহারকারী Developer Tools বা Postman ব্যবহার করে এই ক্লায়েন্ট-সাইড চেক সহজেই বাইপাস করে বাজে বা ক্ষতিকর ডেটা সার্ভারে পাঠাতে পারে। তাই ডেটাবেসকে সুরক্ষিত রাখতে সার্ভার-সাইড ভ্যালিডেশন বাধ্যতামূলক।
+
+### `express-validator` কী এবং কীভাবে কাজ করে?
+
+`express-validator` হলো একটি জনপ্রিয় Express.js মিডলওয়্যার প্যাকেজ, যা ইনকামিং অনুরোধের ডেটা (`req.body`) পরীক্ষা ও স্যানিটাইজ (Sanitize) করার সুবিধা দেয়।
+
+#### মিডলওয়্যার চেইনিং (Middleware Chaining) এর মাধ্যমে ভ্যালিডেশন তৈরি:
+
+```
+const { check, validationResult } = require('express-validator');
+
+// পোস্ট সাইনআপ রাউটের সাথে ভ্যালিডেশন মিডলওয়্যার চেইন
+exports.postSignup = [
+  // ১. ফার্স্ট নেম চেক
+  check('firstName')
+    .notEmpty().withMessage('First name is required')
+    .trim()
+    .isLength({ min: 2 }).withMessage('First name must be at least 2 characters long')
+    .matches(/^[A-Za-z ]+$/).withMessage('First name can only contain letters'),
+
+  // ২. ইমেইল চেক
+  check('email')
+    .isEmail().withMessage('Please enter a valid email address')
+    .normalizeEmail(),
+
+  // ৩. পাসওয়ার্ড চেক (স্ট্রং পাসওয়ার্ড রুল)
+  check('password')
+    .isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
+    .matches(/[A-Z]/).withMessage('Password must contain at least one uppercase letter')
+    .matches(/[a-z]/).withMessage('Password must contain at least one lowercase letter')
+    .matches(/[0-9]/).withMessage('Password must contain at least one number')
+    .matches(/[@$!%*?&amp;]/).withMessage('Password must contain at least one special character'),
+
+  // ৪. কনফার্ম পাসওয়ার্ড চেক (Custom Validation)
+  check('confirmPassword')
+    .trim()
+    .custom((value, { req }) =&gt; {
+      if (value !== req.body.password) {
+        throw new Error('Passwords do not match');
+      }
+      return true;
+    }),
+
+  // ৫. হ্যান্ডলার ফাংশন
+  async (req, res, next) =&gt; {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      // ভুল থাকলে সাইনআপ পেজে এরর মেসেজ ও পুরনো ইনপুটসহ ফেরত পাঠানো
+      return res.status(422).render('auth/signup', {
+        pageTitle: 'Sign Up',
+        errors: errors.array().map(err =&gt; err.msg),
+        oldInput: req.body // ইউজার যেন পুরো ফর্ম আবার না লেখে
+      });
+    }
+    // ভ্যালিডেশন সফল হলে পরবর্তী কাজের জন্য এগিয়ে যাওয়া
+  }
+];
+
+```
+
+### এরর ফিল্টারিং এবং ফর্ম প্রি-ফিলিং (Pre-filling):
+
+ভ্যালিডেশনে ভুল থাকলে `validationResult(req)` থেকে সমস্ত ভুলের অ্যারে পাওয়া যায়। ইউজার যাতে বারবার পুরো ফর্ম পূরণ করার কষ্টে না পড়ে, তাই `oldInput: req.body` পাস করে EJS ভিউ টেমপ্লেটে ইনপুট ফিল্ডের `value` প্রপার্টিতে তা সেট করা হয়।
+
+### 📊 express-validator এরর ফ্লো স্লাইড ডেক
+> [!NOTE]
+> **আর্কিটেকচার ও কাজের প্রবাহচিত্র (Visual Diagram & Flow):**
+> সার্ভার-সাইড ভ্যালিডেশনের ধাপগুলো, চেইন মিডলওয়্যার কীভাবে কাজ করে এবং কীভাবে পুরনো ইনপুট রি-ফিল করতে হয় তার বিস্তারিত প্রেজেন্টেশন।
+
+## পাসওয়ার্ড হ্যাশিং ও ইউজার মডেল তৈরি
+
+### পাসওয়ার্ড কেন Plain Text হিসেবে সেভ করা যাবে না?
+
+যদি কখনো আপনার ডেটাবেস সাইবার আক্রমণের শিকার হয় বা ডেটা লিক হয়, তবে আক্রমণকারী সমস্ত ইউজারের পাসওয়ার্ড সরাসরি জেনে যাবে। যেহেতু মানুষ প্রায়ই বিভিন্ন সাইটে একই পাসওয়ার্ড ব্যবহার করে, তাই এটি মারাত্মক নিরাপত্তার ঝুঁকি তৈরি করে।
+
+### Hashing বনাম Encryption (ওয়ান-ওয়ে হ্যাশিং)
+
+* **Encryption (দ্বিমুখী প্রক্রিয়া):** ডিক্রিপশন কি (Decryption Key) থাকলে এনক্রিপ্ট করা টেক্সটকে পুনরায় আগের মূল টেক্সটে ফিরিয়ে আনা যায়।
+* **Hashing (একমুখী প্রক্রিয়া):** একবার ডেটা হ্যাশ হয়ে গেলে অ্যালগরিদম ব্যবহার করেও সেখান থেকে মূল পাসওয়ার্ডে ফেরত যাওয়া অসম্ভব। অ্যাপ্লিকেশনের ডেভেলপার বা মালিকও ইউজারের আসল পাসওয়ার্ড জানতে পারেন না।
+
+### `bcryptjs` প্যাকেজ ও Salt Rounds
+
+`bcryptjs` একটি শক্তিশালী হ্যাশিং লাইব্রেরি। এটি হ্যাশ করার আগে পাসওয়ার্ডের সাথে একগুচ্ছ র‍্যান্ডম ক্যারেক্টার বা "Salt" যুক্ত করে। `saltRounds` (যেমন: `12`) হলো হ্যাশিং অ্যালগরিদমের পুনরাবৃত্তির সংখ্যা (Cost Factor)। সংখ্যাটি যত বেশি হবে, হ্যাশ ভাঙা ব্রুট-ফোর্স অ্যাটাকের জন্য তত কঠিন হবে।
+
+### Mongoose-এ User Model ডিক্লেয়ারেশন:
+
+```
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+  firstName: { type: String, required: true },
+  lastName: { type: String },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  userType: { 
+    type: String, 
+    required: true, 
+    enum: ['guest', 'host'], 
+    default: 'guest' 
+  },
+  favorites: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Home'
+  }]
+});
+
+module.exports = mongoose.model('User', userSchema);
+
+```
+
+### `bcrypt.hash()` দিয়ে পাসওয়ার্ড সেভ করা:
+
+```
+const bcrypt = require('bcryptjs');
+const User = require('../models/user');
+
+// পাসওয়ার্ড ১২ রাউন্ড Salt দিয়ে হ্যাশ করা
+const hashedPassword = await bcrypt.hash(password, 12);
+
+const user = new User({
+  firstName,
+  lastName,
+  email
+
+```
+
+### 💡 পাসওয়ার্ড সিকিউরিটি ফ্ল্যাশলেসন
+> [!IMPORTANT]
+> **কুইক রিভিশন পয়েন্টস (Quick Revision Points):**
+> পাসওয়ার্ড হ্যাশিং, bcryptjs, Salt Rounds এবং Mongoose Schema সংক্রান্ত প্রধান পরিভাষা ও ধারণাসমূহের ফ্ল্যাশকার্ড।
+
+## লগইন ফ্লো ও পাসওয়ার্ড ভেরিফিকেশন
+
+### সেকিউর লগইন ফ্লো কীভাবে কাজ করে?
+
+১. ইউজার তার ইমেইল ও পাসওয়ার্ড দিয়ে লগইন ফর্ম জমা দেয়। ২. ব্যাক-এন্ডে `User.findOne({ email })` দিয়ে ডেটাবেসে ইমেইলটি খোঁজা হয়। ৩. ইমেইল না পাওয়া গেলে একটি সাধারণ এরর মেসেজ রেন্ডার করা হয়। ৪. ইমেইল পাওয়া গেলে `bcrypt.compare()` দিয়ে ইউজারের দেওয়া পাসওয়ার্ডের সাথে ডেটাবেসের হ্যাশ করা পাসওয়ার্ড মেলানো হয়।
+
+### `bcrypt.compare()` মেথডের ভূমিকা
+
+যেহেতু হ্যাশড পাসওয়ার্ড রিভার্স বা আন-হ্যাশ করা যায় না, তাই `bcrypt.compare(enteredPassword, hashedPassword)` মেথড ইউজারের দেওয়া নতুন পাসওয়ার্ডটিকে একই পদ্ধতিতে হ্যাশ করে ডেটাবেসের স্টোর করা হ্যাশের সাথে বিট-বাই-বিট তুলনা করে। মেলে গেলে এটি `true` রিটার্ন করে।
+
+### Session-এ ইউজার ডেটা সংরক্ষণের কোড উদাহরণ:
+
+```
+const bcrypt = require('bcryptjs');
+const User = require('../models/user');
+
+exports.postLogin = async (req, res, next) =&gt; {
+  const { email, password } = req.body;
+
+  // ১. ইউজার খোঁজা
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(422).render('auth/login', {
+      pageTitle: 'Login',
+      errors: ['Invalid email or password'],
+      oldInput: { email }
+    });
+  }
+
+  // ২. পাসওয়ার্ড তুলনা করা
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    return res.status(422).render('auth/login', {
+      pageTitle: 'Login',
+      errors: ['Invalid email or password'],
+      oldInput: { email }
+    });
+  }
+
+  // ৩. সেশন তৈরি ও সেভ করা
+  req.session.isLoggedIn = true;
+  req.session.user = user;
+  
+  // সেশন ডেটাবেসে নিশ্চিতভাবে সেভ হওয়ার পর রিডাইরেক্ট করা
+  await req.session.save();
+  res.redirect('/');
+};
+
+```
+
+### 🧠 লগইন ও সেশন ক্রিয়েশন মাইন্ড ম্যাপ
+> [!TIP]
+> **মূল কনসেপ্ট সারসংক্ষেপ (Core Concept Breakdown):**
+> সাইনআপ থেকে শুরু করে পাসওয়ার্ড হ্যাশিং, লগইন ভেরিফিকেশন এবং সেশন সেভ হওয়ার সম্পূর্ণ ফ্লো-এর মাইন্ড ম্যাপ diagram।
+
+## রোল-বেসড অথরাইজেশন ও ইউজার-স্পেসিফিক ফেভারিটস
+
+### ১. ডাইনামিক নেভিগেশন UI (Role-based UI)
+
+অ্যাপ্লিকেশনের নেভিগেশন বারে লজিক বসিয়ে আমরা ইউজারের `userType` অনুযায়ী ভিন্ন ভিন্ন মেনু প্রদর্শন করি:
+
+* **Guest User:** Home, Favorites, Bookings দেখতে পাবে।
+* **Host User:** Host Homes, Add Home অপশন দেখতে পাবে।
+
+EJS টেমপ্লেটে নেভিগেশন লজিক:
+
+```
+&lt;% if (isLoggedIn) { %&gt;
+  &lt;% if (user.userType === 'guest') { %&gt;
+    <li><a href="/">Home</a></li>
+    <li><a href="/favorites">Favorites</a></li>
+    <li><a href="/bookings">Bookings</a></li>
+  &lt;% } else if (user.userType === 'host') { %&gt;
+    <li><a href="/host/homes">Host Homes</a></li>
+    <li><a href="/host/add-home">Add Home</a></li>
+  &lt;% } %&gt;
+  <li></li>
+&lt;% } else { %&gt;
+  <li><a href="/login">Login</a></li>
+  <li><a href="/signup">Sign Up</a></li>
+&lt;% } %&gt;
+
+```
+
+---
+
+### ২. ইউজার-স্পেসিফিক ফেভারিটস (User-Specific Favorites)
+
+**আগের সমস্যা:** একটি গ্লোবাল `Favorite` মডেল ব্যবহার করার ফলে একজন ইউজার কোনো বাড়িকে ফেভারিট করলে তা অন্য সব ইউজারের ফেভারিট লিস্টেও ভেসে উঠত!
+
+**স্থায়ী সমাধান:** ১. আলাদা `Favorite` কালেকশনটি পুরোপুরি মুছে ফেলা হয়। ২. `User` মডেলের ভেতরে `favorites` অ্যারে যোগ করা হয়, যেখানে পছন্দ করা বাড়ির `ObjectId` জমা থাকে। ৩. Mongoose-এর `.populate('favorites')` মেথড ব্যবহার করে ফেভারিট পেজ রেন্ডার করার সময় আইডিগুলোর থেকে সরাসরি সম্পূর্ণ ঘরের তথ্য ফেচ করা হয়।
+
+```
+// ফেভারিট লিস্ট দেখানোর কন্ট্রোলার
+exports.getFavorites = async (req, res, next) =&gt; {
+  // সেশনে থাকা ইউজারের আইডি দিয়ে ডেটাবেস থেকে ইউজারের তথ্য আনা ও ফেভারিটস পপুলেট করা
+  const user = await User.findById(req.session.user._id).populate('favorites');
+  
+  res.render('store/favorite-list', {
+    pageTitle: 'Your Favorites',
+    favoriteHomes: user.favorites, // পপুলেট করা অবজেক্টের অ্যারে
+    isLoggedIn: req.session.isLoggedIn,
+    user: req.session.user
+  });
+};
+
+// ফেভারিট যোগ করার কন্ট্রোলার
+exports.postAddFavorite = async (req, res, next) =&gt; {
+  const { homeId } = req.body;
+  const user = await User.findById(req.session.user._id);
+
+  if (!user.favorites.includes(homeId)) {
+    user.favorites.push(homeId);
+    await user.save();
+  }
+  res.redirect('/favorites');
+};
+
+```
+
+subscriptions
+
+### 📌 পার্সোনালাইজেশন ও রোল-ভিত্তিক ফিচার টিউটোরিয়াল
+> ইউজার টাইপ ভিত্তিক নেভিগেশন পরিবর্তন এবং Mongoose populate ব্যবহার করে ইউজার-স্পেসিফিক ফেভারিটস বানানোর সংক্ষিপ্ত ভিডিও প্রেজেন্টেশন।
+
+## মেথড, প্যাকেজ, সিনট্যাক্স, ভুল ও অনুশীলন
+
+### Important Methods, Functions &amp; Properties
+
+* `check('fieldName')`: `express-validator`\-এ নির্দিষ্ট কোনো ফিল্ড পরীক্ষার নির্দেশ দেওয়ার জন্য মেথড।
+* `validationResult(req)`: রিকোয়েস্টের সাথে যুক্ত হওয়া সমস্ত ভ্যালিডেশন এরর একত্রিত করে এক্সট্র্যাক্ট করে।
+* `bcrypt.hash(password, saltRounds)`: প্লেন পাসওয়ার্ডকে একমুখী হ্যাশে রূপান্তর করে (Promise)।
+* `bcrypt.compare(plainText, hash)`: সাধারণ পাসওয়ার্ডের সাথে ডেটাবেসের হ্যাশ পাসওয়ার্ড চেক করে সঠিক কি না তা যাচাই করে (Promise)।
+* `doc.populate('path')`: Mongoose-এ অন্য কালেকশনের রেফারেন্স করা `ObjectId` ব্যবহার করে সরাসরি মূল ফাইল রিকভার করে।
+* `req.session.save()`: সেশনের যেকোনো আপডেট ডেটাবেসে দ্রুত নিশ্চিত করার কাজ করে।
+
+### Modules &amp; Packages
+
+* `express-validator`: সার্ভার-সাইড ডাটা সানাইটাইজেশন ও ভ্যালিডেশনের npm প্যাকেজ।
+* `bcryptjs`: পাসওয়ার্ড হ্যাশিং এবং তুলনা করার জন্য Node.js প্যাকেজ।
+
+### Common Mistakes (সাধারণ ভুল ও সমাধান)
+
+1. **ভুল:** ডেটাবেসে প্লেন টেক্সট পাসওয়ার্ড সেভ করা।
+  * **সমাধান:** `bcrypt.hash()` ব্যবহার করে সবসময় হ্যাশ সেভ করুন।
+2. **ভুল:** শুধুমাত্র ক্লায়েন্ট-সাইড HTML5 ভ্যালিডেশনের ওপর ভরসা করা।
+  * **সমাধান:** ব্যাক-এন্ডে `express-validator` দিয়ে বাধ্যতামূলক চেক বসান।
+3. **ভুল:** পাসওয়ার্ড ভুল হলে "Password is wrong" এবং ইমেইল না মিললে "Email not found" আলাদা করে স্পষ্ট এরর দেওয়া।
+  * **সমাধান:** নিরাপত্তাজনিত কারণে জেনেরিক মেসেজ ব্যবহার করুন: "Invalid email or password"।
+4. **ভুল:** `bcrypt.hash()` বা `bcrypt.compare()`\-এর আগে `await` বাদ দেওয়া।
+  * **সমাধান:** এগুলো Asynchronous মেথড, তাই অবশ্যই `await` বা `.then()` ব্যবহার করুন।
+
+### Quick Revision
+
+* **Authentication** \= ইউজার কে তা নিশ্চিত করা।
+* **Authorization** \= ইউজার সিস্টেমে কী কী করতে পারবেন তা নির্ধারণ করা।
+* `express-validator` ব্যাক-এন্ডে ফর্ম ভ্যালিডেশন নিশ্চিত করে।
+* `bcryptjs` পাসওয়ার্ডকে ওয়ান-ওয়ে হ্যাশে রূপান্তরিত করে।
+* `populate()` দিয়ে Mongoose রেফারেন্সিয়াল ডাটা সহজেই রিট্রাইভ করা যায়।
+
+---
+
+### Practice Questions (অনুশীলনী প্রশ্নাবলী)
+
+১. Authentication এবং Authorization-এর মধ্যে প্রধান ২টি পার্থক্য লিখুন। ২. কেন ক্লায়েন্ট-সাইড ভ্যালিডেশন থাকা সত্ত্বেও সার্ভার-সাইডে `express-validator` ব্যবহার করা আবশ্যক? ৩. Hashing এবং Encryption-এর মধ্যে মূল পার্থক্য কী? কেন পাসওয়ার্ডের ক্ষেত্রে Hashing ব্যবহৃত হয়? ৪. `bcryptjs`\-এ Salt Rounds বলতে কী বোঝায়? Salt Rounds বাড়ালে বা কমালে কী ঘটে? ৫. Mongoose-এ `populate()` মেথড কীভাবে কাজ করে এবং এটি ইউজার ফেভারিটস ফিচার ইমপ্লিমেন্টেশনে কীভাবে সাহায্য করেছিল?
+
+### 📌 মেথড, সিকিউরিটি ও সাধারণ ভুলের অডিও মাস্টারক্লাস
+> সিকিউরিটি বেস্ট প্র্যাকটিস, express-validator, bcryptjs মেথড এবং ডেভেলপারদের সাধারণ ভুলসমূহ নিয়ে একটি নির্দেশনামূলক অডিও আলোচনা।
+
+## সারসংক্ষেপ
+
+এই লেকচারে আমরা MERN Stack অ্যাপ্লিকেশনের নিরাপত্তা ব্যবস্থার কেন্দ্রবিন্দু—অথেনটিকেশন, সার্ভার-সাইড ভ্যালিডেশন, বিপ্রিপ্ট দিয়ে পাসওয়ার্ড হ্যাশিং এবং রোল-ভিত্তিক অথরাইজেশন ও ইউজার-স্পেসিফিক পার্সোনালাইজেশন নিখুঁতভাবে তৈরি করা শিখেছি।
+
+**মূল সারসংক্ষেপ:**
+
+* Authentication ইউজারের পরিচয় নিশ্চিত করে, আর Authorization ইউজারের অধিকার বা পারমিশন নির্ধারণ করে।
+* `express-validator` দিয়ে সার্ভার-সাইডে ডেটা যাচাই না করে কখনোই ডেটাবেসে ডেটা পাঠানো উচিত নয়।
+* `bcryptjs` পাসওয়ার্ডকে হ্যাশ করে ওয়ান-ওয়ে সিকিউরিটি দেয়, যা সাইবার আক্রমণ থেকে ইউজারকে রক্ষা করে।
+* সেশন ম্যানেজমেন্টের মাধ্যমে ইউজারের লগইন স্টেট ও ইউজার টাইপ ট্র্যাকিং করা হয়।
+* Mongoose `populate()` ব্যবহার করে ইউজারের নিজস্ব পছন্দের তালিকা ডাইনামিক এবং ইউজার-স্পেসিফিক করা সম্ভব।
+
+---
+
+## 🔗 তথ্যসূত্র ও গুরুত্বপূর্ণ লিংক (References)
+- [Node.js Official Documentation](https://nodejs.org/en/docs/)
+- [Express.js Official Guide](https://expressjs.com/)
+- [MongoDB Manual](https://www.mongodb.com/docs/manual/)
+- [Mongoose Documentation](https://mongoosejs.com/docs/)
+- [MDN Web Docs](https://developer.mozilla.org/en-US/)
+
+---
+**পরবর্তী লেসন পড়ার জন্য আপনার ট্র্যাক সূচিপত্রে ফিরে যান:** [⬅️ Back to Express.js Index](../../Express.js/README.md)

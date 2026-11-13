@@ -1,0 +1,320 @@
+# 01. Express.js পরিচিতি, সুবিধা ও প্রথম সার্ভার সেটআপ (Introduction to Express.js & First Server)
+
+---
+
+## 🧭 দ্রুত নেভিগেশন (Quick Navigation)
+- [⬅️ মূল রিপোজিটরি সূচিপত্র](../../README.md)
+- [📊 লার্নিং ট্র্যাকার](../../LEARNING-TRACKER.md)
+- [📁 Express.js ট্র্যাক](../../Express.js/README.md)
+
+---
+
+## Introduction
+
+আপনি কি কখনো ভেবে দেখেছেন, একটি পূর্ণাঙ্গ ওয়েব সার্ভার তৈরি করতে গিয়ে প্রতিটা রাউট, হেডার আর রিকোয়েস্ট বডি আলাদা করে ম্যানুয়ালি হ্যান্ডেল করা কতটা সময়সাপেক্ষ এবং জটিল? Node.js-এর নিজস্ব `http` মডিউল দিয়ে কাজ করা অনেকটা চাকা নতুন করে আবিষ্কার করার মতো! এখানেই আসে Express.js — যা আপনার ব্যাকএন্ড কোডিংকে করবে দ্রুত, পরিচ্ছন্ন এবং অত্যন্ত শক্তিশালী।
+
+By the end of this lesson, you will be able to:
+
+* Explain what Express.js is and why it is used alongside Node.js.
+* Understand and implement the core concept of Middleware in Express.
+* Setup and configure an Express application from scratch using npm.
+* Handle Route Handling using `app.use()`, `app.get()`, and `app.post()`.
+* Send automatic HTML and JSON responses using `res.send()`.
+
+## এই ক্লাসে কী কী শেখানো হয়েছে?
+
+এই লেসনে Prashant Sir-এর Express.js পরিচিতি ক্লাসের সমস্ত মূল বিষয় বিস্তারিতভাবে আলোচনা করা হয়েছে:
+
+1. **Express.js পরিচিতি (Introduction to Express.js):** এটি কী, কেন দরকার এবং Node.js-এর সাথে এর পার্থক্য।
+2. **Middleware কনসেপ্ট (Concept of Middleware):** Middleware কী, কীভাবে কাজ করে, `req`, `res`, এবং `next()` ফাংশনের ভূমিকা।
+3. **ইন্সটলেশন ও সার্ভার সেটআপ (Installation &amp; Server Setup):** Express ইন্সটল করা এবং `app.listen()` দিয়ে সার্ভার চালানো।
+4. **Route Handling (রাউট হ্যান্ডলিং):** `app.use()`, `app.get()`, `app.post()` ব্যবহার করে বিভিন্ন Path এবং HTTP Method হ্যান্ডেল করা।
+5. **Response Sending (রেসপন্স পাঠানো):** `res.send()` এর সুবিধা এবং কীভাবে Express স্বয়ংক্রিয়ভাবে Header ও Content-Type সেট করে।
+6. **Express Internals (Source Code &amp; Internals):** Express কীভাবে গোপনে Node.js-এর উপরে একটি হেলপার লেয়ার হিসেবে কাজ করে।
+7. **Hands-on Practice Set:** একটি পূর্ণাঙ্গ Contact Us ফর্ম ও বিভিন্ন রাউট সহ হ্যান্ডস-অন এক্সারসাইজ সমাধান।
+
+### 🧠 Express.js Core Concepts Mind Map
+> [!TIP]
+> **মূল কনসেপ্ট সারসংক্ষেপ (Core Concept Breakdown):**
+> Express.js-এর মূল বিষয়সমূহ (Core Concepts, Middleware, Routing, Response Handling) এর এক নজরে মাইন্ড ম্যাপ।
+
+## Express.js কী এবং কেন ব্যবহার করব?
+
+### What is it?
+
+Express.js হলো Node.js-এর জন্য লেখা একটি **Minimal and Flexible Web Application Framework**। এটি কোনো আলাদা প্ল্যাটফর্ম নয়; বরং এটি Node.js-এর উপরে তৈরি একটি হেলপার লেয়ার।
+
+### Platform vs Framework (Node.js vs Express.js)
+
+* **Node.js:** একটি JavaScript Runtime Environment (প্ল্যাটফর্ম), যা সার্ভার সাইডে JavaScript চালানোর সুবিধা দেয়।
+* **Express.js:** Node.js-এর উপর নির্মিত একটি Framework, যা ব্যাকএন্ড সার্ভার ও API তৈরি সহজ করতে অসংখ্য প্রি-বিল্ট টুলস ও মডিউল সরবরাহ করে।
+
+### Why is it used?
+
+Node.js-এর ইন-বিল্ট `http` মডিউল দিয়ে সার্ভার তৈরি করলে প্রতিটি URL Path, HTTP Method (GET, POST), Header সেট করা এবং Request Body হ্যান্ডেল করার জন্য প্রচুর বয়লারপ্লেট (Boilerplate) কোড লিখতে হয়। Express.js এই সমস্ত কাজকে সহজ ও সংক্ষিপ্ত করে দেয়।
+
+### Application Types Supported:
+
+Express.js দিয়ে ৩ ধরনের ওয়েব অ্যাপ্লিকেশন তৈরি করা যায়:
+
+1. **Single Page Application (SPA):** যেখানে UI লজিক ক্লায়েন্টে (যেমন: React) থাকে এবং সার্ভার কেবল JSON ডেটা পাঠায়।
+2. **Multi Page Application (MPA):** ঐতিহ্যবাহী অ্যাপ্লিকেশন যেখানে প্রতিটি পেজের জন্য আলাদা আলাদা HTML সার্ভার থেকে পাঠানো হয়।
+3. **Hybrid Application:** কিছু অংশ ক্লায়েন্টে এবং কিছু অংশ সার্ভারে রেন্ডার হয়।
+
+### Mental Model
+
+চিন্তা করুন Node.js হলো একটি গাড়ির ইঞ্জিন, আর Express.js হলো সেই গাড়ির ড্যাশবোর্ড, স্টিয়ারিং এবং বডিওয়ার্ক। ইঞ্জিন ছাড়া গাড়ি চলবে না, কিন্তু কেবল ইঞ্জিন দিয়ে গাড়ি চালানো অত্যন্ত কঠিন। Express.js আপনাকে সুবিধাজনক কন্ট্রোল দেয়।
+
+### Common Beginner Mistakes
+
+* **ভুল ধারণা:** Express.js শিখলে Node.js-এর দরকার নেই।
+* **বাস্তবতা:** Express.js মূলত Node.js-এর উপরেই চলে, তাই Node.js-এর মৌলিক জ্ঞান থাকা অপরিহার্য।
+
+### 📊 Node.js vs Express.js Architecture
+> [!NOTE]
+> **আর্কিটেকচার ও কাজের প্রবাহচিত্র (Visual Diagram & Flow):**
+> Node.js প্ল্যাটফর্ম এবং Express.js ফ্রেমওয়ার্কের মধ্যে সম্পর্ক এবং কাঠামোগত তুলনামূলক ইনফোগ্রাফিক।
+
+## Express.js ইন্সটলেশন ও বেসিক সার্ভার সেটআপ
+
+### What is it?
+
+Express.js হলো একটি থার্ড-পার্টি npm প্যাকেজ। এটিকে প্রজেক্টে যুক্ত করে একটি Express Application তৈরি করা হয়।
+
+### Installation Command
+
+প্রজেক্ট টার্মিনালে নিচের কমান্ডটি চালাতে হয়: `npm install express --save` (অথবা সংক্ষেপে `npm i express`)
+
+**Note:** nodemon-এর মতো এটিকে `--save-dev` হিসেবে ইন্সটল করা যাবে না, কারণ ফাইনাল প্রোডাকশন সার্ভারেও Express প্রয়োজন হয়।
+
+### Basic Server Setup Logic
+
+১. Express মডিউলকে `require()` করে ইম্পোর্ট করা। ২. Express ফাংশনটি কল করে `app` নামে একটি Application অবজেক্ট তৈরি করা। ৩. `app.listen(port, callback)` কল করে নির্দিষ্ট পোর্টে সার্ভার চালানো।
+
+```
+const express = require('express');
+const app = express();
+
+app.listen(3000, () =&gt; {
+  console.log('Server is running on port 3000');
+});
+
+```
+
+### Important Methods
+
+* **express()** **:** Express অ্যাপ্লিকেশন অবজেক্ট তৈরি করে রিটার্ন করে।
+* **app.listen(port, callback)** **:** নির্দিষ্ট পোর্টে সার্ভার তৈরি করে রিকুয়েস্ট শোনার জন্য রান করে (এটি অভ্যন্তরীণভাবে Node-এর `http.createServer` ব্যবহার করে)।
+
+### 💡 Express Installation &amp; Setup Flashcards
+> [!IMPORTANT]
+> **কুইক রিভিশন পয়েন্টস (Quick Revision Points):**
+> Express ইন্সটলেশন কমান্ড, মডিউল ইম্পোর্ট এবং app.listen() সম্পর্কিত ফ্ল্যাশকার্ড।
+
+## Middleware এর ধারণা এবং কার্যপ্রণালী
+
+### What is it?
+
+Middleware হলো এমন একটি ফাংশন যা সার্ভারে আসা Request এবং সার্ভার থেকে যাওয়া Response-এর মাঝখানে কাজ করে। এটি Request এবং Response অবজেক্টকে অ্যাক্সেস করতে পারে এবং পরবর্তী Middleware-কে কল করার ক্ষমতা রাখে।
+
+### How does it work? (Chain of Middlewares)
+
+যখন ক্লায়েন্ট থেকে কোনো রিকুয়েস্ট আসে, তখন তা একের পর এক রেজিস্টার করা Middleware-এর মধ্য দিয়ে যায় (Chain/Pipeline): `Request` ➔ `Middleware 1` ➔ `Middleware 2` ➔ `Middleware 3` ➔ `Response`
+
+প্রতিটি Middleware ফাংশনে তিনটি আর্গুমেন্ট থাকে:
+
+1. `req` (Request Object)
+2. `res` (Response Object)
+3. `next` (Next Function)
+
+`next()` ফাংশন কল করলে রিকুয়েস্টটি পরবর্তী Middleware-এর কাছে চলে যায়। যদি কোনো Middleware মাঝপথেই `res.send()` করে রেসপন্স বানিয়ে পাঠিয়ে দেয়, তবে রিকুয়েস্টটি সেখানেই থেমে যায় এবং পরবর্তী Middleware-এ আর যায় না (যেমন: Authentication ব্যর্থ হলে ৪০১ আন-অথরাইজড রেসপন্স দেওয়া)।
+
+### Order Importance
+
+Middleware রেজিস্টার করার ক্রম (Order) অত্যন্ত গুরুত্বপূর্ণ! কোডে যেভাবে `app.use()` লেখা হয়, ঠিক সেই ক্রমানুসারে রিকুয়েস্ট প্রসেস হয়।
+
+### Example Syntax:
+
+```
+app.use((req, res, next) =&gt; {
+  console.log(`Path: ${req.url}
+
+```
+
+### 📊 Middleware Request Pipeline Slide Deck
+> [!NOTE]
+> **আর্কিটেকচার ও কাজের প্রবাহচিত্র (Visual Diagram & Flow):**
+> Middleware রিকুয়েস্ট-রেসপন্স সাইকেল, req, res, next() এর কার্যপ্রণালী এবং পাইপলাইনের ভিজ্যুয়াল স্লাইড ডেক।
+
+## Route Handling এবং HTTP Methods
+
+### What is Routing?
+
+রাউটিং হলো ক্লায়েন্টের রিকুয়েস্টকৃত URL Path (যেমন: `/`, `/contact-us`) এবং HTTP Method (যেমন: `GET`, `POST`)-এর উপর ভিত্তি করে সার্ভার কীভাবে প্রতিক্রিয়া জানাবে তা নির্ধারণ করা।
+
+### Route Handling Methods:
+
+1. **app.use(path, callback)** **:**
+  * **Wildcard Matching:** এটি আংশিক বা শুরুর Path ম্যাচ করে। যেমন `/` দেওয়া থাকলে এটি `/`, `/contact`, `/about` সব রাউটেই রান করবে।
+  * এটি যেকোনো HTTP Method (GET, POST, PUT, DELETE)-এর জন্য কাজ করে।
+2. **app.get(path, callback)** **:**
+  * **Exact Matching:** এটি কেবল নির্দিষ্ট Path এবং শুধুমাত্র HTTP `GET` রিকুয়েস্টের জন্য কাজ করে।
+  * যেমন: `app.get('/contact-us', ...)` কেবল `/contact-us` পাথের GET রিকুয়েস্টেই ট্রিগার হবে।
+3. **app.post(path, callback)** **:**
+  * **Exact Matching:** এটি কেবল নির্দিষ্ট Path এবং শুধুমাত্র HTTP `POST` রিকুয়েস্টের জন্য (যেমন Form Submit) কাজ করে।
+
+### Code Example:
+
+```
+// GET Route for Contact Page
+app.get('/contact-us', (req, res) =&gt; {
+  res.send('');
+});
+
+// POST Route for Submitting Form
+app.post('/contact-us', (req, res) =&gt; {
+  res.send('Form submitted successfully!');
+});
+
+```
+
+### Common Beginner Mistakes
+
+* `app.use('/')` কে সবার উপরে রেখে তাতে `next()` না দেওয়া, ফলে নিচের কোনো specific রাউটেই রিকুয়েস্ট না পৌঁছানো।
+
+### 📊 Route Matching Guide Infographic
+> [!NOTE]
+> **আর্কিটেকচার ও কাজের প্রবাহচিত্র (Visual Diagram & Flow):**
+> app.use() (Wildcard) এবং app.get()/app.post() (Exact match) এর মধ্যে রাউট গাইডের তুলনামূলক ইনফোগ্রাফিক।
+
+## Response পাঠানো এবং Express-এর অভ্যন্তরীণ কাজ
+
+### What is `res.send()`?
+
+Express-এ রেসপন্স পাঠানোর সবচেয়ে পাওয়ারফুল ও ব্যবহৃত মেথড হলো `res.send()`।
+
+### Why is it better than Native Node.js `res.end()`?
+
+১. **Auto Header Setting:** এটি স্বয়ংক্রিয়ভাবে ডেটার ধরন বুঝে `Content-Type` হেডার সেট করে দেয় (যেমন: String পাঠালে `text/html`, Object পাঠালে `application/json`)। ২. **Implicit Response End:** আলাদা করে `res.end()` কল করতে হয় না, এটি একাই রেসপন্স পাঠানোর পর কানেকশন শেষ করে। ৩. **Auto Status Code:** ডিফল্টভাবে ২০০ (OK) স্ট্যাটাস কোড যুক্ত করে।
+
+### Express Internals &amp; GitHub Source Code
+
+Express.js কোনো অলৌকিক কিছু নয়! এটি সম্পূর্ণ Open Source (GitHub-এ এর সমস্ত কোড রয়েছে)। Express-এর ভেতরে `res.send` মেথডটি পরীক্ষা করলে দেখা যায়, এটি অভ্যন্তরীণভাবে JavaScript-এর `typeof` দিয়ে চেক করে আপনি String, HTML, নাকি Object পাঠাচ্ছেন এবং সেই অনুযায়ী `setHeader('Content-Type', ...)` এবং `res.end()` কল করে। অর্থাৎ Node.js-এর যে কাজটি আমাদের ম্যানুয়ালি করতে হতো, Express তা নিজের কোড দিয়ে আমাদের জন্য সহজ করে দিয়েছে।
+
+### 📌 Express Internals &amp; Res.send Overview
+> Native Node.js HTTP মডিউলের তুলনায় Express-এর res.send() কীভাবে স্বয়ংক্রিয়ভাবে হেডার সেট করে ও কাজ সহজ করে তার ওপর অডিও আলোচনা।
+
+## Important Modules, Packages, Syntax &amp; Differences
+
+### Modules / Packages / Libraries
+
+1. **express** **:** Third-party npm package. Web Application Framework যা সার্ভার তৈরি ও রাউটিং পরিচালনা করে।
+2. **nodemon** **:** Third-party npm devDependency. ফাইল পরিবর্তন হলে সার্ভার স্বয়ংক্রিয়ভাবে রিস্টার্ট করে।
+
+### Important Syntax &amp; Keywords
+
+* `const express = require('express');` ➔ Express মডিউল ইম্পোর্ট করা।
+* `const app = express();` ➔ Express অ্যাপ্লিকেশন অবজেক্ট তৈরি করা।
+* `app.use([path], middlewareFunction)` ➔ Middleware রেজিস্টার করা।
+* `app.get(path, middlewareFunction)` ➔ Specific GET route তৈরি করা।
+* `app.post(path, middlewareFunction)` ➔ Specific POST route তৈরি করা।
+* `res.send(data)` ➔ ক্লায়েন্টে রেসপন্স পাঠানো।
+* `next()` ➔ পরবর্তী Middleware-এ রিকুয়েস্ট পাস করা।
+
+### Important Differences Table
+
+* **Node.js HTTP vs Express.js:**
+  * Node.js: নিচু স্তরের API, ম্যানুয়ালি হেডার ও রাউট হ্যান্ডেল করতে হয়।
+  * Express.js: উচু স্তরের Framework, স্বয়ংক্রিয় হেডার সেট ও চমৎকার মিডলওয়্যার সিস্টেম।
+* **app.use()** **vs** **app.get()** **:**
+  * `app.use()`: Wildcard matching, যেকোনো HTTP মেথডে কাজ করে।
+  * `app.get()`: Exact matching, কেবল GET মেথডে কাজ করে।
+
+### 💡 Syntax, Methods &amp; Differences Flashcards
+> [!IMPORTANT]
+> **কুইক রিভিশন পয়েন্টস (Quick Revision Points):**
+> গুরুত্বপূর্ণ সিনট্যাক্স, মেথডসমূহ এবং পার্থক্যের রিভিশন ফ্ল্যাশকার্ড।
+
+## Summary
+
+### Synthesis &amp; Big Picture Insight
+
+Express.js হলো ব্যাকএন্ড নোড ডেভেলপমেন্টের মূল চালিকাশক্তি। এটি Node.js-এর বয়লারপ্লেট কোড কমিয়ে Middleware এবং Routing সিস্টেমের মাধ্যমে কোডকে মডুলার, পরিচ্ছন্ন ও রক্ষণাবেক্ষণযোগ্য করে তোলে।
+
+### Key Takeaways
+
+* Express.js একটি Minimal Node.js Framework যা Web Application ও API তৈরিতে সাহায্য করে।
+* Middleware হলো Express-এর হৃদপিন্ড, যা `req`, `res`, এবং `next()` ব্যবহার করে রিকুয়েস্ট-রেসপন্স প্রসেস করে।
+* `app.use()` আংশিক বা Wildcard রাউট ম্যাচিং করে, আর `app.get()` / `app.post()` হুবহু (Exact) রাউট এবং নির্দিষ্ট HTTP Method ম্যাচ করে।
+* `res.send()` স্বয়ংক্রিয়ভাবে `Content-Type` হেডার সেট করে এবং রেসপন্স শেষ করে।
+* মিডলওয়্যারের ক্রমানুসার (Order) অত্যন্ত গুরুত্বপূর্ণ।
+
+---
+
+## Quick Revision
+
+* **Express.js:** Minimal web framework for Node.js.
+* **Middleware:** `(req, res, next)` স্বাক্ষরযুক্ত ফাংশন যা রিকুয়েস্ট চেইনে কাজ করে।
+* **next()** **:** পরবর্তী মিডলওয়্যারে যাওয়ার নির্দেশ।
+* **res.send()** **:** অটো-হেডার সহ রেসপন্স পাঠানোর সহজ উপায়।
+* **Wildcard vs Exact Routing:** `app.use()` বনাম `app.get()`/`app.post()`।
+
+---
+
+## Important Methods / Functions
+
+* **express()** **:** তৈরি করে নতুন Express অ্যাপ।
+* **app.listen(port, callback)** **:** নির্দিষ্ট পোর্টে সার্ভার চালায়।
+* **app.use(path, callback)** **:** মিডলওয়্যার যুক্ত করে (Wildcard match)।
+* **app.get(path, callback)** **:** GET রিকুয়েস্ট হ্যান্ডেল করে (Exact match)।
+* **app.post(path, callback)** **:** POST রিকুয়েস্ট হ্যান্ডেল করে (Exact match)।
+* **res.send(body)** **:** ক্লায়েন্টে রেসপন্স পাঠায় এবং কানেকশন শেষ করে।
+* **next()** **:** পরবর্তী মিডলওয়্যারের কাছে রিকুয়েস্ট হস্তান্তর করে।
+
+---
+
+## Important Modules / Packages
+
+* **express** **:** Third-party npm package — Express framework সরবরাহ করে।
+* **nodemon** **:** Third-party devDependency — সার্ভার অটো-রিস্টার্টার।
+
+---
+
+## Important Terms
+
+* **Framework:** কোড গুছিয়ে লেখার ও দ্রুত ডেভেলপমেন্টের জন্য তৈরি প্রস্তুতকৃত স্ট্রাকচার।
+* **Middleware:** রিকুয়েস্ট ও রেসপন্সের মাঝে কাজ করা ইন্টারসেপ্টর ফাংশন।
+* **Routing:** URL Path এবং Method অনুযায়ী রিকুয়েস্টকে নির্দিষ্ট কোডে পরিচালনা করা।
+* **Wildcard Matching:** শুরুর অংশ মিললেই রাউট ট্রিগার হওয়া।
+* **Exact Matching:** সম্পূর্ণ URL Path এবং Method হুবহু মিললে রাউট ট্রিগার হওয়া।
+
+---
+
+## What I Must Remember
+
+1. Express ইন্সটল করার সময় সাধারণ ডিপেন্ডেন্সি (`--save`) হিসেবে করতে হবে, `--save-dev` হিসেবে নয়।
+2. মিডলওয়্যারে `res.send()` না করলে অবশ্যই `next()` কল করতে হবে, নয়তো রিকুয়েস্ট আটকে থাকবে।
+3. `res.send()` ডাকার পর আবার `next()` বা পুনরায় `res.send()` ডাকা যাবে না (Header sent error আসবে)।
+4. `app.use()` এর অর্ডার কোডে যেভাবে লেখা হবে, সেভাবেই রান হবে।
+
+---
+
+## Practice Questions
+
+1. Express.js-কে কেন Minimal Framework বলা হয় এবং এটি Node.js-এর সাথে কীভাবে সম্পর্কিত?
+2. Express Middleware-এ `next()` ফাংশনের মূল কাজ কী? `next()` না ডাকলে কী ঘটবে?
+3. `app.use('/user')` এবং `app.get('/user')`\-এর মধ্যে রাউট ম্যাচিংয়ের দিক থেকে প্রধান পার্থক্য কী?
+4. `res.send()` ব্যবহার করলে Native Node.js-এর তুলনায় কী কী সুবিধা পাওয়া যায়?
+5. একটি Express অ্যাপে যদি `res.send()` ডাকার পরেও `next()` কল করা হয়, তবে কনসোলে কী ধরনের এরর দেখা দেবে এবং কেন?
+
+---
+
+## 🔗 তথ্যসূত্র ও গুরুত্বপূর্ণ লিংক (References)
+- [Node.js Official Documentation](https://nodejs.org/en/docs/)
+- [Express.js Official Guide](https://expressjs.com/)
+- [MongoDB Manual](https://www.mongodb.com/docs/manual/)
+- [Mongoose Documentation](https://mongoosejs.com/docs/)
+- [MDN Web Docs](https://developer.mozilla.org/en-US/)
+
+---
+**পরবর্তী লেসন পড়ার জন্য আপনার ট্র্যাক সূচিপত্রে ফিরে যান:** [⬅️ Back to Express.js Index](../../Express.js/README.md)

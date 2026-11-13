@@ -1,0 +1,318 @@
+# 06. ডায়নামিক রাউটস, Route Params ও Query Params (Dynamic Routes, Route Parameters & Query Strings)
+
+---
+
+## 🧭 দ্রুত নেভিগেশন (Quick Navigation)
+- [⬅️ মূল রিপোজিটরি সূচিপত্র](../../README.md)
+- [📊 লার্নিং ট্র্যাকার](../../LEARNING-TRACKER.md)
+- [📁 Express.js ট্র্যাক](../../Express.js/README.md)
+
+---
+
+## Introduction
+
+আমরা যখন কোনো ই-কমার্স বা Airbnb-এর মতো ওয়েবসাইটে যাই, তখন প্রতিটি প্রোডাক্ট বা বাড়ির জন্য কি আলাদা আলাদা পেজ তৈরি করতে হয়? নাকি একটিমাত্র স্মার্ট ডায়নামিক পাথ (Dynamic Path) দিয়েই হাজার হাজার আইটেমের ডিটেইলস প্রদর্শন করা সম্ভব?
+
+By the end of this lesson, you will be able to:
+
+* **Analyze** the operational differences between Query Parameters and Path Parameters in Express.js.
+* **Implement** Dynamic Routing using route parameters (`req.params`) to fetch and display specific item details.
+* **Construct** asynchronous Model methods (`findByID`) utilizing Callback patterns for custom data filtering.
+* **Handle** dynamic POST requests sent from EJS Form submissions using hidden input fields to store application state.
+
+## ১. এই ক্লাসে কী কী শেখানো হয়েছে এবং Dynamic Paths-এর ধারণা
+
+## ১. এই ক্লাসে কী কী শেখানো হয়েছে?
+
+এই ক্লাসে Node.js, Express.js এবং MVC (Model-View-Controller) আর্কিটেকচারের ওপর ভিত্তি করে নিচের গুরুত্বপূর্ণ বিষয়গুলো শেখানো হয়েছে:
+
+1. **Dynamic Path (ডায়নামিক পাথ)**: স্ট্যাটিক ইউআরএল (Static URL) এবং ডায়নামিক ইউআরএল-এর মধ্যে পার্থক্য।
+2. **Query Parameters vs Path Parameters**: ইউআরএল-এর মাধ্যমে ডেটা পাঠানোর দুটি প্রধান উপায়।
+3. **Route Parameters (** **req.params** **)**: Express.js-এ পাথ থেকে ভ্যারিয়েবল রিড করা।
+4. **Model Layer Update (** **findByID** **)**: নির্দিষ্ট আইডির ভিত্তিতে ফাইল থেকে ডেটা ফিল্টার করে বের করার লজিক।
+5. **Form Submissions with Hidden Input**: ইজেএস (EJS) টেমপ্লেটে গোপন ইনপুট ফিল্ডের মাধ্যমে ইউজার ইন্টারফেস না বিগড়ে ব্যাকএন্ডে আইডি পাস করা।
+6. **POST Request for Dynamic Actions**: ডায়নামিক আইডি সহ ডুপ্লিকেট চেকিং সম্পন্ন একটি `Favorite` ফিচার ইমপ্লিমেন্ট করা।
+
+---
+
+## ২. Dynamic Path (ডায়নামিক পাথ) কী এবং কেন ব্যবহৃত হয়?
+
+### What is it? (ডায়নামিক পাথ কী?)
+
+**Dynamic Path** হলো এমন এক ধরনের URL স্ট্রাকচার, যার কিছু অংশ স্থির (Static) থাকে এবং নির্দিষ্ট কিছু অংশ পরিবর্তনশীল (Dynamic) হয়। যেমন: `/homes/1` এবং `/homes/2`\- এখানে `/homes/` অংশটি ফিক্সড, কিন্তু শেষের `1` বা `2` হলো ভিন্ন ভিন্ন আইটেমের ইউনিক আইডি।
+
+### Why is it used? (কেন ব্যবহৃত হয়?)
+
+ধরা যাক একটি ওয়েবসাইটে ১০,০০০টি পণ্য বা বাড়ি আছে। আমরা যদি প্রতিটি বাড়ির জন্য আলাদা আলাদা রাউট (Route) যেমন: `/home-1`, `/home-2` ইত্যাদি হাতে লিখে তৈরি করি, তবে কোড মেইনটেইন করা অসম্ভব হয়ে পড়বে। Dynamic Path ব্যবহার করলে একটিমাত্র রাউটের মাধ্যমেই হাজার হাজার আইটেমের জন্য পেজ জেনারেট করা সম্ভব হয়।
+
+### How does it work? (কীভাবে কাজ করে?)
+
+ইউআরএল-এর মাধ্যমে ডায়নামিক ডেটা পাঠানোর দুটি প্রধান পদ্ধতি নিচে আলোচনা করা হলো:
+
+1. **Query Parameter (কোয়েরি প্যারামিটার):**
+  * **প্যাটার্ন:** `URL?key1=value1&amp;key2=value2`
+  * **উদাহরণ:** `example.com/search?name=home&amp;id=101`
+  * **ব্যবহার:** মূলত সার্চ, ফিল্টারিং বা পেজিনেশনের ক্ষেত্রে ব্যবহৃত হয়। ইউআরএল-এ প্রশ্নবোধক চিহ্ন (`?`) এবং Key-Value পেয়ার আকারে থাকে। একাধিক ডেটা যুক্ত করতে `&amp;` সিম্বল ব্যবহৃত হয়।
+2. **Path Parameter (পাথ প্যারামিটার):**
+  * **প্যাটার্ন:** `URL/resource/:variableName`
+  * **উদাহরণ:** `example.com/users/:userId` (প্রকৃত ইউআরএল: `example.com/users/101`)
+  * **ব্যবহার:** নির্দিষ্ট কোনো রিসোর্সের ডিটেইলস পেজে যাওয়ার জন্য এটি বহুল ব্যবহৃত ও ক্লিন একটি উপায়।
+
+### Mental Model (মানসিক মডেল)
+
+চিন্তা করুন একটি ফর্মের শূন্যস্থান পূরণ (Fill in the Blanks) ফরম্যাটের কথা: *"স্বাগতম [নাম]!"*। এখানে *"স্বাগতম"* অংশটি নির্দিষ্ট, কিন্তু *"[নাম]"* অংশটি ব্যক্তিভেদে পাল্টে যায়। Dynamic Path ঠিক এইভাবেই কাজের ক্ষেত্র প্রস্তুত করে।
+
+### 📊 Query Parameters vs Path Parameters Comparison
+> [!NOTE]
+> **আর্কিটেকচার ও কাজের প্রবাহচিত্র (Visual Diagram & Flow):**
+> Visual comparison illustrating the structure, syntax, and specific use cases of Query Parameters vs Path Parameters in Express.js URLs.
+
+## Express.js-এ Dynamic Routing ও req.params এর ব্যবহার
+
+## Express.js-এ Dynamic Routing ও `req.params`
+
+### What is it?
+
+Express.js-এ ইউআরএল-এর ভেতরে কোলন (`:`) চিহ্ন ব্যবহার করে Dynamic Route ডিক্লেয়ার করা হয় এবং রাউট হ্যান্ডলারের ভেতর `req.params` অবজেক্টের মাধ্যমে ওই প্যারামিটারের মান রিড করা হয়।
+
+### Syntax &amp; Implementation
+
+```
+// storeRouter.js
+// কোলন (:) দিয়ে আমরা Express-কে বলছি যে homeId একটি ভ্যারিয়েবল
+storeRouter.get('/homes/:homeId', storeController.getHomeDetails);
+
+```
+
+### `req.params` কীভাবে কাজ করে?
+
+যখন কোনো ব্যবহারকারী ব্রাউজারে `/homes/102` ইউআরএল-এ হিট করে, Express স্বয়ংক্রিয়ভাবে একটি অবজেক্ট তৈরি করে: `req.params = { homeId: '102' }`
+
+কন্ট্রোলারের ভেতর আমরা সহজেই এই আইডি এক্সেস করতে পারি:
+
+```
+// storeController.js
+exports.getHomeDetails = (req, res, next) =&gt; {
+  const homeId = req.params.homeId; // '102'
+  console.log("Requested Home ID:", homeId);
+};
+
+```
+
+### Code Logic and Flow
+
+1. **User Action**: ব্যবহারকারী কোনো বাড়ির "Details" বাটনে ক্লিক করে (`/homes/1` ইউআরএল-এ যায়)।
+2. **Router**: Router দেখে যে অনুরোধকৃত ইউআরএলটি `/homes/:homeId` প্যাটার্নের সাথে মিলছে।
+3. **Controller**: Controller `req.params.homeId` থেকে আইডিটি সংগ্রহ করে।
+4. **Data Fetching**: প্রাপ্ত আইডি দিয়ে Model-কে নির্দিষ্ট ডেটা খুঁজতে বলে।
+5. **View Rendering**: ডেটা পাওয়া গেলে `res.render()` দিয়ে `home-detail.ejs` পেজটি রেন্ডার করে ব্রাউজারে ফেরত পাঠায়।
+
+### 🧠 Dynamic Request Handler Flow
+> [!TIP]
+> **মূল কনসেপ্ট সারসংক্ষেপ (Core Concept Breakdown):**
+> A branching visual diagram showing the step-by-step lifecycle of a dynamic request from Browser URL to Router, Controller, Model, and Response.
+
+## Model Layer-এ findByID মেথড তৈরি ও Callbacks
+
+## Model Layer-এ `findByID` মেথড তৈরি ও কলব্যাক প্যাটার্ন
+
+### What is it?
+
+মডেলে এমন একটি স্ট্যাটিক মেথড (Static Method) তৈরি করা যা ফাইল রিড (File Read) করে সমস্ত ডেটার ভেতর থেকে নির্দিষ্ট আইডি-র আইটেমটি খুঁজে বের করে আনে।
+
+### Why Callback is needed? (কেন কলব্যাক প্রয়োজন?)
+
+Node.js-এ ফাইল রিড করা একটি Asynchronous (অ্যাসিঙ্ক্রোনাস) অপারেশন। ফাইল রিড শেষ হতে কিছুটা সময় লাগে। তাই ফাইল রিড শেষ হওয়ার পর ডেটা কন্ট্রোলারে ফেরত পাঠানোর জন্য Callbacks ব্যবহার করা হয়।
+
+### How does `findByID` work?
+
+```
+// models/home.js
+static findById(homeId, callback) {
+  this.fetchAll((homes) =&gt; {
+    // Array.prototype.find() দিয়ে ম্যাচিং ডেটা খোঁজা
+    const homeFound = homes.find((home) =&gt; home.id === homeId);
+    callback(homeFound); // ডেটা পাওয়া গেলে বা না গেলে কলব্যাক দিয়ে পাঠানো
+  });
+}
+
+```
+
+### `Array.prototype.find()` মেথড:
+
+* **কাজ**: অ্যারের ভেতর থেকে একটি শর্ত পূরণকারী প্রথম এলিমেন্টকে খুঁজে বের করে।
+* **Return**: শর্ত মিললে নির্দিষ্ট অবজেক্ট, না মিললে `undefined` ফেরত দেয়।
+
+### Controller Handling &amp; Redirection (ডেটা না পাওয়া গেলে করণীয়)
+
+যদি ইউআরএল-এ ভুল বা অস্তিত্বহীন আইডি পাঠানো হয়, তবে `homeFound` হবে `undefined`। এই পরিস্থিতিতে সার্ভার ক্র্যাশ না করিয়ে ব্যবহারকারীকে রিডাইরেক্ট (Redirect) করে মূল পেজে পাঠিয়ে দেওয়া নিরাপদ:
+
+```
+// storeController.js
+exports.getHomeDetails = (req, res, next) =&gt; {
+  const homeId = req.params.homeId;
+  Home.findById(homeId, (home) =&gt; {
+    if (!home) {
+      console.log("Home not found!");
+      return res.redirect('/homes'); // না পাওয়া গেলে হোম পেজে রিডাইরেক্ট
+    }
+    res.render('store/home-detail', {
+      home: home,
+      pageTitle: home.houseName,
+      currentPage: 'home-list'
+    });
+  });
+};
+
+```
+
+### 📊 Asynchronous Data Searching with findByID
+> [!NOTE]
+> **আর্কিটেকচার ও কাজের প্রবাহচিত্র (Visual Diagram & Flow):**
+> Scaffolded presentation explaining asynchronous file operations, the findByID static method, and callback-driven response handling.
+
+## Dynamic POST Request এবং Favorites Feature
+
+## Dynamic POST Request এবং Favorites Feature
+
+### What is it?
+
+একটি পেজ থেকে কোনো নির্দিষ্ট আইটেমকে "Favorite" বা বুকমার্ক হিসেবে সেভ করার জন্য POST Request ও Hidden Form Input ব্যবহার করার কৌশল।
+
+### Hidden Input Field (গোপন ইনপুট ফিল্ড) কেন ব্যবহার করা হয়?
+
+ব্যবহারকারী যখন "Add to Favorite" বাটনে ক্লিক করে, তখন আমরা ব্রাউজারে আইডি ফিল্ডটি দেখাতে চাই না, কিন্তু ব্যাকএন্ডে ফর্ম সাবমিটের সাথে ওই বাড়ির আইডিটি পাঠানো প্রয়োজন। এজন্য HTML Form-এ `` ব্যবহৃত হয়।
+
+```
+
+```
+
+### Express-এ POST Data গ্রহণ করা (`req.body`)
+
+ফর্ম সাবমিট হলে ব্যাকএন্ডে `req.body.id`\-এর মাধ্যমে সেই আইডি পাওয়া যায় (এজন্য অ্যাপে `express.urlencoded()` মিডলওয়্যার সক্রিয় থাকা আবশ্যক)।
+
+### Favorite Model &amp; Duplicate Prevention
+
+পছন্দের বাড়িগুলো `favorites.json` নামক ফাইলে সেভ করা হয়। তবে একই বাড়ি যেন একাধিকবার সেভ না হয়, সেজন্য `Array.prototype.includes()` দিয়ে ডুপ্লিকেট চেকিং করা হয়:
+
+```
+// models/favorite.js
+static addFavorite(homeId, callback) {
+  this.getFavorites((favorites) =&gt; {
+    if (favorites.includes(homeId)) {
+      callback("Home is already marked as favorite!");
+    } else {
+      favorites.push(homeId);
+      fs.writeFile(favoriteDataPath, JSON.stringify(favorites), (err) =&gt; {
+        callback(err);
+      });
+    }
+  });
+}
+
+```
+
+### Render Logic for Favorite Items
+
+১. প্রথমে `favorites.json` থেকে সমস্ত প্রিয় বাড়ির আইডিগুলোর অ্যারে নিয়ে আসা হয় (যেমন: `['1', '3']`)। ২. এরপর সমস্ত বাড়ির ডেটা ফেচ করে ফিল্টার করা হয়:
+
+```
+const favoriteHomes = registeredHomes.filter((home) =&gt; 
+  favorites.includes(home.id)
+);
+
+```
+
+৩. প্রাপ্ত ফিল্টারকৃত ডেটা ইজেএস টেমপ্লেটে রেন্ডার করা হয়।
+
+### 💡 Key Dynamic Routing Concepts &amp; Methods
+> [!IMPORTANT]
+> **কুইক রিভিশন পয়েন্টস (Quick Revision Points):**
+> Interactive revision flashcards covering core topics including req.params, req.body, type="hidden", Array.find(), and Array.includes().
+
+## গুরুত্বপূর্ণ Modules, Syntax, ও শিক্ষানবিসদের সাধারণ ভুলসমূহ
+
+## গুরুত্বপূর্ণ Modules, Syntax, ও শিক্ষানবিসদের সাধারণ ভুলসমূহ
+
+### Important Modules / Packages
+
+* **fs** **(Node.js Built-in)**: ফাইলে ডেটা পড়তে ও লিখতে ব্যবহৃত হয় (`fs.readFile`, `fs.writeFile`)।
+* **path** **(Node.js Built-in)**: সিস্টেম স্বাধীন ফাইল পাথ তৈরিতে ব্যবহৃত হয় (`path.join`)।
+* **storeRouter** **(Project-Created)**: অ্যাপ্লিকেশনের স্টোর সংক্রান্ত সমস্ত রাউটিং নিয়ন্ত্রণ করে।
+* **Home** **/** **Favorite** **(Project-Created Models)**: বিজনেস লজিক ও ডেটা পার্সিস্টেন্সে সাহায্য করে।
+
+### Important Differences
+
+| বিষয়                  | Query Parameters (`req.query`) | Path Parameters (`req.params`)     | Form Body (`req.body`)        |
+| --------------------- | ------------------------------ | ---------------------------------- | ----------------------------- |
+| **URL রূপ**           | `/search?id=1`                 | `/homes/1`                         | URL-এ দেখা যায় না (HTTP Body) |
+| **ব্যবহারের ক্ষেত্র** | ফিল্টারিং, সার্চ, পেজিনেশন     | নির্দিষ্ট কোনো রিসোর্স চিহ্নিত করা | ফর্ম সাবমিশন, সেভ, আপডেট      |
+| **HTTP Method**       | GET                            | GET                                | POST / PUT / PATCH            |
+
+### Common Beginner Mistakes (শিক্ষানবিসদের সাধারণ ভুলসমূহ)
+
+1. **Dynamic Route এ কোলন (** **:** **) না দেওয়া**: `/homes/homeId` লিখলে Express এটিকে একটি স্থির স্ট্রিং মনে করবে। সঠিকভাবে লিখতে হবে `/homes/:homeId`।
+2. **req.params** **এর নাম নিয়ে বিভ্রান্তি**: রাউটে যে নাম দেয়া হবে (`:homeId`), কন্ট্রোলারে `req.params.homeId` দিয়ে ঠিক একই বানানে প্যারামিটার এক্সেস করতে হবে।
+3. **Form-এ** **method="POST"** **ভুলে যাওয়া**: ডিফল্টভাবে ফর্ম GET রিকোয়েস্ট পাঠায়। ফলে সংবেদনশীল ডেটা ইউআরএল-এ প্রকাশ পেয়ে যেতে পারে এবং POST রাউট কাজ করবে না।
+4. **Asynchronous Callbacks না ডাকা**: ফাইল রিড শেষ হওয়ার পর কলব্যাক না ডাকলে অ্যাপ ফ্রিজ হয়ে থাকবে এবং রেসপন্স আটকে যাবে।
+5. **If-Else এ** **return** **না ব্যবহার করা**: `res.redirect()` করার পরও যদি ফাংশনের বাকি কোড এক্সিকিউট হতে দেওয়া হয়, তবে "Cannot set headers after they are sent to the client" এরর আসবে।
+
+### 📌 Common Pitfalls in Dynamic Express Routing
+> A conversational discussion explaining the top mistakes beginners make with dynamic routes, req.params, and form POST handling.
+
+## Quick Revision &amp; Practice Questions
+
+## Quick Revision &amp; What I Must Remember
+
+### Important Methods / Functions Checklist
+
+* `storeRouter.get('/homes/:homeId', ...)` \-&gt; ডায়নামিক রাউট ডিক্লেয়ার করা।
+* `req.params.homeId` \-&gt; ইউআরএল থেকে ডায়নামিক আইডি পড়া।
+* `Array.prototype.find()` \-&gt; আইডি ম্যাচ করে নির্দিষ্ট একটি অবজেক্ট খোঁজা।
+* `Array.prototype.filter()` \-&gt; একাধিক আইডি ম্যাচ করে ফিল্টার করা অ্যারে তৈরি করা।
+* `Array.prototype.includes()` \-&gt; ডুপ্লিকেট আইডি আছে কিনা চেক করা।
+* `` \-&gt; ব্রাউজারে না দেখিয়ে ফর্মে ব্যাকএন্ডে আইডি পাঠানো।
+
+### What I Must Remember (এক পলকে যা মনে রাখতে হবে)
+
+* dynamic parameter নির্দেশ করতে ইউআরএল-এ অবশ্যই কোলন (`:`) ব্যবহার করতে হবে।
+* যেকোনো স্টেট পরিবর্তন বা ডেটা সেভ করার জন্য GET না ব্যবহার করে সবসময় POST রিকোয়েস্ট ব্যবহার করা নিরাপদ।
+* Asynchronous File I/O এর ক্ষেত্রে কন্ট্রোলারে ডেটা ফেরত পাঠাতে Callbacks আবশ্যক।
+
+### Practice Questions (অনুশীলনী প্রশ্ন)
+
+1. Query Parameter এবং Path Parameter এর মধ্যে মূল দুটি পার্থক্য কী কী?
+2. Express.js-এ `/products/:category/:productId` রাউট থেকে `category` এবং `productId` কীভাবে পড়া যাবে?
+3. HTML Form-এ `` ব্যবহার করার প্রয়োজনীয়তা কী?
+4. `Array.prototype.find()` এবং `Array.prototype.filter()` এর প্রধান পার্থক্য কী?
+5. ফাইল রিড অপারেশন করার পর সরাসরি `return` না করে কেন কলব্যাক ব্যবহার করা হয়?
+
+### 📊 Core Takeaways &amp; Revision Slides
+> [!NOTE]
+> **আর্কিটেকচার ও কাজের প্রবাহচিত্র (Visual Diagram & Flow):**
+> A crisp visual presentation summarizing core syntax, flow diagrams, and key memory points from this lecture.
+
+## Summary
+
+## Summary &amp; Big Picture Insight
+
+এই ক্লাসের মূল শিক্ষা হলো কীভাবে একটি ওয়েব অ্যাপ্লিকেশনে স্থির (Static) পৃষ্ঠার বদলে ডায়নামিক ও ইন্টারেক্টিভ অভিজ্ঞতা তৈরি করা যায়। Dynamic Path এবং Route Parameters (`req.params`) ব্যবহার করে একটিমাত্র কোড স্ট্রাকচার দিয়েই ভিন্ন ভিন্ন পণ্যের তথ্য প্রদর্শন করা যায়। একই সাথে HTML Hidden Input এবং Express POST handling ব্যবহার করে ইউজার ইন্টারঅ্যাকশন যেমন- Favorite সেভ করা বা ডুপ্লিকেট চেকিং সফলভাবে বাস্তবায়ন করা যায়।
+
+### Key Takeaways
+
+* **Dynamic Routing** ডেভেলপারদের হাজার হাজার পেজ ম্যানুয়ালি না বানিয়ে ইউআরএল-এর ওপর ভিত্তি করে জেনেরিক পেজ তৈরি করার সুযোগ দেয়।
+* **req.params** অবজেক্টের মাধ্যমে কোলনপ্রিফিক্সড ইউআরএল ভ্যারিয়েবল থেকে ডেটা নেওয়া হয়।
+* **req.body** ফর্ম ডেটা প্রসেস করে, বিশেষ করে লুকায়িত ইনপুট (`type="hidden"`) থেকে আইডি পড়তে সহায়তা করে।
+* **Callback Pattern** অ্যাসিঙ্ক্রোনাস ফাইল রিড সম্পূর্ণ হওয়ার পর কন্ট্রোলারে রেসপন্স পাঠানোর নির্ভরযোগ্য উপায়।
+
+---
+
+## 🔗 তথ্যসূত্র ও গুরুত্বপূর্ণ লিংক (References)
+- [Node.js Official Documentation](https://nodejs.org/en/docs/)
+- [Express.js Official Guide](https://expressjs.com/)
+- [MongoDB Manual](https://www.mongodb.com/docs/manual/)
+- [Mongoose Documentation](https://mongoosejs.com/docs/)
+- [MDN Web Docs](https://developer.mozilla.org/en-US/)
+
+---
+**পরবর্তী লেসন পড়ার জন্য আপনার ট্র্যাক সূচিপত্রে ফিরে যান:** [⬅️ Back to Express.js Index](../../Express.js/README.md)
