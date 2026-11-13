@@ -1,0 +1,277 @@
+## Introduction
+
+আপনার অ্যাপ্লিকেশনে ব্যবহারকারীর ডাটা কি শুধু একটি টেক্সট বা JSON ফাইলে সংরক্ষণ করা নিরাপদ? ফাইল হ্যান্ডলিং দিয়ে ছোটখাটো কাজ চললেও, লক্ষ লক্ষ ব্যবহারকারীর ডাটা দ্রুত, নিরাপদে এবং নিখুঁতভাবে পরিচালনা করতে আমাদের প্রয়োজন বিশেষায়িত ডাটাবেস ব্যবস্থা।
+
+By the end of this lesson, you will be able to:
+
+* **Analyze** the limitations of file handling and explain why databases are essential for enterprise applications.
+* **Compare** SQL (Relational) and NoSQL databases based on schema, scaling, and performance.
+* **Set up** MySQL Server and Workbench to construct database schemas and tables.
+* **Integrate** Node.js with MySQL using the `mysql2` package and connection pools.
+* **Execute** CRUD operations safely using parameterized queries to prevent SQL Injection vulnerabilities.
+
+## এই ক্লাসে কী কী শেখানো হয়েছে?
+
+এই পাঠে Node.js ব্যাকএন্ডে রিলেশনাল ডাটাবেস (SQL) ব্যবহারের মূল নীতি ও বাস্তব প্রয়োগ শেখানো হয়েছে। নিচে ক্লাসের মূল বিষয়গুলোর তালিকা দেওয়া হলো:
+
+* **ফাইল হ্যান্ডলিং বনাম ডাটাবেস (File Handling vs Database):** কেন ফাইলে ডাটা রাখা বড় প্রজেক্টে ব্যর্থ হয় এবং ডাটাবেস কীভাবে এই সমস্যা সমাধান করে।
+* **DBMS ও ডাটাবেসের পার্থক্য:** Database এবং Database Management System (DBMS)-এর সংজ্ঞা ও কার্যকারিতা।
+* **SQL বনাম NoSQL:** স্ট্রাকচার্ড (Relational) ও আনস্ট্রাকচার্ড ডাটাবেসের পার্থক্য, Vertical vs Horizontal Scaling এবং ACID Properties।
+* **MySQL সেটআপ ও Workbench:** MySQL Server এবং ইউজার ইন্টারফেস tool হিসেবে Workbench ইনস্টলেশন ও ব্যবহার।
+* **Schema ও Table গঠন:** Primary Key, Auto Increment, Unique, Not Null এবং Data Types (Int, Double, Long Text, VarChar)।
+* **Node.js-এ mysql2 প্যাকেজ:** Connection Pool তৈরি করা এবং Promises ব্যবহার করে আসিনক্রোনাস কাজ পরিচালনা।
+* **CRUD অপারেশন ও নিরাপত্তা:** SELECT, INSERT, UPDATE, DELETE কোয়েরি চালানো এবং Parameterized Queries-এর মাধ্যমে SQL Injection প্রতিরোধ।
+
+### 🧠 SQL Lesson Overview
+> [!TIP]
+> **মূল কনসেপ্ট সারসংক্ষেপ (Core Concept Breakdown):**
+> Visual breakdown of the lesson structure including Database basics, SQL vs NoSQL, MySQL setup, Node.js integration, and SQL Injection security.
+
+## ডাটাবেস ধারণা: ফাইল সিস্টেম বনাম ডাটাবেস
+
+### What is it?
+
+**Database (ডাটাবেস)** হলো বিশাল পরিমাণ তথ্য বা ডাটা একটি নির্দিষ্ট কাঠামোতে (Structured Format) স্থায়ীভাবে সংরক্ষণ করার একটি বিশেষায়িত ডিজিটাল ব্যবস্থা। আর **DBMS (Database Management System)** হলো এমন একটি সফটওয়্যার (যেমন: MySQL, PostgreSQL, MongoDB) যা এই ডাটাবেসে ডাটা তৈরি, পড়া, আপডেট করা এবং মুছে ফেলার কাজগুলো পরিচালনা করে।
+
+### Why is it used?
+
+প্রজেক্টের শুরুতে আমরা Node.js-এর `fs` (File System) মডিউল দিয়ে JSON ফাইলে ডাটা সেভ করতাম। কিন্তু ফাইলের প্রধান সীমাবদ্ধতাগুলো হলো:
+
+1. **ডাটার পরিমাণ (Data Volume):** জিগাবাইট (GB) বা টেরাবাইট (TB) পরিমাণের ডাটা সাধারণ ফাইলে রিড-রাইট করলে সিস্টেম ধীরগতি হয়ে পড়ে বা ক্র্যাশ করে।
+2. **কনকারেন্সি (Multiple Users/Concurrency):** একই সময়ে হাজার হাজার ব্যবহারকারী ফাইলে ডাটা লিখতে গেলে ডাটা নষ্ট (Corrupt) হয়ে যায়।
+3. **ডাটা ইন্টিগ্রিটি ও অ্যাকুরেসি (Data Integrity):** ফাইলে ভুল ডাটা টাইপ ঢোকা বন্ধ করার সহজ উপায় থাকে না।
+4. **নিরাপত্তা ও অ্যাক্সেস কন্ট্রোল (Security):** ফাইলের ক্ষেত্রে রোল-বেসড সিকিউরিটি বা পাসওয়ার্ড এনক্রিপশন ডাটাবেসের মতো শক্তিশালী নয়।
+
+### How does it work?
+
+DBMS সফটওয়্যারটি হার্ডডিস্ক এবং আমাদের ব্যাকএন্ড কোডের মধ্যে একটি দক্ষ মধ্যস্থতাকারী (Middleman) হিসেবে কাজ করে। আমরা কোড থেকে নির্দেশ পাঠাই, আর DBMS খুব দ্রুত ইনডেক্সিং এবং মেমরি ম্যানেজমেন্ট ব্যবহার করে ডাটা প্রসেস করে।
+
+### Important Terms &amp; Concepts
+
+* **Data Integrity (ডাটা সততা):** সময় অতিবাহিত হলেও ডাটা যেন সঠিক, নিখুঁত এবং কনসিস্টেন্ট থাকে।
+* **Concurrency Control:** একসাথে একাধিক ইউজার লেনদেন বা ডাটা পরিবর্তন করলেও যেন কোনো ডাটা হারিয়ে না যায়।
+
+### Mental Model
+
+চিন্তা করুন **File System** হলো আপনার টেবিলের ওপর রাখা একটি সাধারণ খাতা। আপনি একা লিখলে ঠিক আছে, কিন্তু ৫০ জন লোক একসাথে এক পাতায় লিখতে গেলে খাতা ছিঁড়ে যাবে। অন্যদিকে **Database** হলো একটি আধুনিক ডিজিটাল লাইব্রেরি, যেখানে একজন অভিজ্ঞ লাইব্রেরিয়ান (DBMS) একই সাথে শত শত মানুষকে ক্যাটালগ থেকে সঠিক বইটি সেকেন্ডের মধ্যে এনে দিচ্ছেন।
+
+### 📊 File System vs Database Management System
+> [!NOTE]
+> **আর্কিটেকচার ও কাজের প্রবাহচিত্র (Visual Diagram & Flow):**
+> Side-by-side visual comparison showing performance, scaling, security, and multi-user access differences between JSON files and DBMS.
+
+## SQL বনাম NoSQL ডাটাবেস
+
+### What is SQL?
+
+**SQL (Structured Query Language)** হলো একটি প্রমিত প্রোগ্রামিং ভাষা যা রিলেশনাল ডাটাবেসের (Relational Database) সাথে যোগাযোগের জন্য ব্যবহৃত হয়। SQL ডাটাবেসগুলো ডাটা সারাসরি **Table (রৌ এবং কলাম)** আকারে রাখে।
+
+### What is NoSQL?
+
+**NoSQL (Not Only SQL)** ডাটাবেস ডাটাকে নির্দিষ্ট টেবিল কাঠামোর বদলে ফ্লেক্সিবল ডকুমেন্ট (যেমন JSON/BSON), Key-Value, বা Graph আকারে সংরক্ষণ করে।
+
+### Key Differences Explained
+
+1. **Schema Structure (ডাটার কাঠামো):**
+  * **SQL:** **Fixed Schema** ব্যবহার করে। অর্থাৎ টেবিল তৈরির আগেই ঠিক করতে হয় কলামগুলোর নাম ও ডাটা টাইপ কী হবে।
+  * **NoSQL:** **Flexible Schema** ব্যবহার করে। একটি নথিতে ৩টি ফিল্ড এবং অন্য নথিতে ১০টি ফিল্ড থাকতে পারে।
+2. **Scaling (প্রসারণক্ষমতা):**
+  * **Vertical Scaling (Scaling Up):** SQL ডাটাবেসে ডাটা বাড়লে একই সার্ভারে RAM, CPU এবং Storage বাড়িয়ে বড় সার্ভার বানানো হয়। এর একটি নির্দিষ্ট সীমা রয়েছে।
+  * **Horizontal Scaling (Scaling Out):** NoSQL ডাটাবেসে ডাটা বাড়লে নতুন নতুন সাধারণ সার্ভার/কম্পিউটার ক্লাস্টারে যুক্ত করা হয়।
+3. **Data Redundancy vs Normalization:**
+  * **SQL (Normalization):** ডাটার ডুপ্লিকেশি কমানোর জন্য ডাটাক ছোট ছোট টেবিলে ভাগ করে Foreign Key দিয়ে রিলেশন তৈরি করা হয়।
+  * **NoSQL (Denormalization):** দ্রুত ডাটা পড়ার জন্য একই ডাটা একাধিক জায়গায় কপি (Duplicate) করে রাখা পছন্দ করা হয়, যাতে বার বার টেবিল জয়েন করতে না হয়।
+4. **ACID Compliance:**
+  * SQL ডাটাবেস কঠোরভাবে **ACID** (Atomicity, Consistency, Isolation, Durability) নিয়ম মেনে চলে, যা আর্থিক লেনদেনের (Financial Transactions) জন্য অপরিহার্য।
+
+### 📊 SQL vs NoSQL Architecture
+> [!NOTE]
+> **আর্কিটেকচার ও কাজের প্রবাহচিত্র (Visual Diagram & Flow):**
+> Sequential presentation covering relational tables vs document stores, fixed vs dynamic schema, vertical vs horizontal scaling, and normalisation.
+
+## MySQL এনভায়রনমেন্ট সেটআপ ও Workbench
+
+### Components Required
+
+1. **MySQL Community Server:** মূল ডাটাবেস ইঞ্জিন যা ব্যাকগ্রাউন্ডে সার্ভিস হিসেবে চলে এবং ডাটা সংরক্ষণ করে।
+2. **MySQL Workbench:** ডাটাবেস ভিজ্যুয়ালি দেখার, টেবিল তৈরি করার এবং SQL কোয়েরি টেস্ট করার একটি GUI (Graphical User Interface) টুল।
+
+### Table Schema Design (AirBnB Project Example)
+
+আমরা আমাদের AirBnB প্রজেক্টের ঘরগুলোর ডাটা রাখার জন্য `airbnb` নামে একটি Schema (Database) এবং `homes` নামে একটি Table তৈরি করি।
+
+কলামের বৈশিষ্ট্য ও ডাটা টাইপ:
+
+* **id:** INT, Primary Key, Auto Increment (`AI`), Unique, Not Null।
+* **houseName:** LongText বা VarChar, Not Null।
+* **price:** Double, Not Null।
+* **location:** LongText, Not Null।
+* **rating:** Double, Not Null।
+* **photoUrl:** LongText, Not Null।
+* **description:** LongText (Optional/Nullable)।
+
+### Keywords &amp; Properties
+
+* **Primary Key:** টেবিলের প্রতিটি রেকর্ডকে অনন্যভাবে (Uniquely) শনাক্ত করার ফিল্ড।
+* **Auto Increment (** **AI** **):** নতুন ডাটা যুক্ত হলে ডাটাবেস নিজ থেকেই আইডি ১, ২, ৩ এভাবে বাড়িয়ে দেয়।
+* **Not Null:** এই কলামের মান ফাঁকা বা `null` রাখা যাবে না।
+
+### 💡 MySQL Setup &amp; Schema Concepts
+> [!IMPORTANT]
+> **কুইক রিভিশন পয়েন্টস (Quick Revision Points):**
+> Flashcard deck covering MySQL terms like Primary Key, Auto Increment, Not Null, Schema, Data Types, and Workbench tools.
+
+## Node.js-এ mysql2 ও কানেকশন পুল
+
+### What is `mysql2`?
+
+`mysql2` হলো একটি ৩য় পক্ষের (Third-party) npm প্যাকেজ, যা Node.js অ্যাপ্লিকেশনকে MySQL সার্ভারের সাথে সংযুক্ত করতে এবং প্রমিস (Promises/Async-Await) ভিত্তিক এসকিউএল কোয়েরি চালাতে সাহায্য করে।
+
+### Single Connection vs Connection Pool
+
+* **Single Connection (একক কানেকশন):** প্রতিবার কোয়েরি চালানোর জন্য নতুন কানেকশন তৈরি করা এবং কাজ শেষে বন্ধ করা। এটি অত্যন্ত ধীরগতির এবং সার্ভারের ওপর অতিরিক্ত চাপ তৈরি করে।
+* **Connection Pool (কানেকশন পুল):** অ্যাপ্লিকেশনের শুরুতেই কয়েকটি ডাটাবেস কানেকশন তৈরি করে রাখা হয়। কোনো কোয়েরি আসলে পুল থেকে একটি কানেকশন ধার নিয়ে কাজ শেষ করে আবার পুলে ফেরত দেওয়া হয়।
+
+### How Connection Pool Works in Code
+
+আমরা `utils/databaseUtil.js` ফাইলে একটি শাটল বা রিইউজেবল কানেকশন পুল তৈরি করি:
+
+```
+const mysql = require('mysql2');
+
+const pool = mysql.createPool({
+  host: 'localhost',
+  user: 'root',
+  password: 'YOUR_PASSWORD',
+  database: 'airbnb'
+});
+
+module.exports = pool.promise();
+
+```
+
+### Why `pool.promise()`?
+
+ডিফল্টভাবে `mysql2` কলব্যাক (Callbacks) ব্যবহার করে। কোডকে পরিচ্ছন্ন রাখতে এবং `async/await` বা `.then().catch()` ব্যবহার করার সুবিধার্থে আমরা `pool.promise()` এক্সপোর্ট করি।
+
+### 📌 Understanding Connection Pools
+> Conversational audio explanation comparing single database connections with connection pooling and how promise-based mysql2 functions work.
+
+## SQL কোয়েরি এক্সিকিউশন ও নিরাপত্তা
+
+### CRUD Operations in SQL
+
+* **Create (INSERT):** `INSERT INTO homes (houseName, price) VALUES (?, ?)`
+* **Read (SELECT):** `SELECT * FROM homes` অথবা নির্দিষ্ট আইডি খুঁজতে `SELECT * FROM homes WHERE id = ?`
+* **Update (UPDATE):** `UPDATE homes SET houseName = ?, price = ? WHERE id = ?`
+* **Delete (DELETE):** `DELETE FROM homes WHERE id = ?`
+
+### What is SQL Injection Attack?
+
+যদি আমরা ব্যবহারকারীর পাঠানো ইনপুট সরাসরি SQL স্ট্রিংয়ের ভেতরে বসিয়ে দিই (String Concatenation/Interpolation), তবে কোনো ক্ষতিকর ব্যবহারকারী ইনপুট বক্সে ক্ষতিকর SQL কমান্ড লিখে ডাটাবেসের সমস্ত ডাটা মুছে ফেলতে পারে বা চুরি করতে পারে। একে **SQL Injection** বলে।
+
+### Danger Example:
+
+`"SELECT * FROM users WHERE name = '" + userInput + "'"` এখানে `userInput` যদি `' OR '1'='1` দেওয়া হয়, তবে পাসওয়ার্ড ছাড়াই সব ডাটা আনলক হয়ে যাবে!
+
+### Solution: Parameterized Queries (`?` Placeholders)
+
+আমরা কোয়েরিতে সরাসরি মান না বসিয়ে প্রশ্নবোধক চিহ্ন (`?`) ব্যবহার করি এবং মানগুলোকে একটি অ্যারে হিসেবে ২য় আর্গুমেন্ট হিসেবে পাঠাই। `mysql2` এই মানগুলোকে নিজে থেকেই এস্কেপ (Sanitise) করে নিরাপদে ডাটাবেসে পাঠায়।
+
+```
+// Safe Implementation in Home Model (save method)
+static save(home) {
+  if (home.id) {
+    // Update existing record
+    return db.execute(
+      'UPDATE homes SET houseName=?, price=?, location=?, rating=?, photoUrl=?, description=? WHERE id=?',
+      [home.houseName, home.price, home.location, home.rating, home.photoUrl, home.description, home.id]
+    );
+  } else {
+    // Insert new record
+    return db.execute(
+      'INSERT INTO homes (houseName, price, location, rating, photoUrl, description) VALUES (?, ?, ?, ?, ?, ?)',
+      [home.houseName, home.price, home.location, home.rating, home.photoUrl, home.description]
+    );
+  }
+}
+
+```
+
+subscriptions
+
+### 📌 SQL Injection &amp; Parameterized Queries
+> Video presentation walking through how SQL Injection exploits vulnerable strings and how the '?' placeholder prevents unauthorized access.
+
+## প্যাকেজ, সিনট্যাক্স ও সাধারণ ভুলসমূহ
+
+### Important Modules / Packages
+
+* **mysql2** **:** (Third-party npm package) Node.js-কে MySQL ডাটাবেসের সাথে যুক্ত করতে ব্যবহৃত হয়।
+
+### Key SQL Keywords
+
+* **SELECT** **:** ডাটা তুলে আনার জন্য।
+* **INSERT INTO** **:** নতুন রেকর্ড যোগ করার জন্য।
+* **UPDATE ... SET** **:** বিদ্যমান রেকর্ড সংশোধন করার জন্য।
+* **DELETE FROM** **:** রেকর্ড মুছে ফেলার জন্য।
+* **WHERE** **:** কোনো নির্দিষ্ট শর্ত ফিল্টার করার জন্য।
+
+### Important Syntax: Array Destructuring with `db.execute`
+
+`db.execute()` চালানোর পর একটি অ্যারে রিটার্ন করে যার প্রথম ইলিমেন্ট হলো ডাটা রৌ (`rows`) এবং ২য় ইলিমেন্ট হলো মেটাডাটা বা কলাম ডিটেইলস (`fields`)।
+
+```
+const [rows] = await db.execute('SELECT * FROM homes');
+// rows contiene list of home objects
+
+```
+
+### Common Beginner Mistakes &amp; Solutions
+
+1. **প্যাকেজের ভুল নাম:** `npm i mysql` এর বদলে অবশ্যই `mysql2` ইনস্টল করতে হবে।
+2. **mysql2** **এ স্পেস বা বানান ভুল:** কলামের নাম ডাটাবেসে যা আছে (যেমন: `photoUrl`), জাভাস্ক্রিপ্ট অবজেক্টেও ঠিক একই নাম ব্যবহার করতে হবে।
+3. **WHERE** **ক্লজ ভুলে যাওয়া:** `UPDATE` বা `DELETE` করার সময় `WHERE id = ?` না দিলে টেবিলের সমস্ত ডাটা আপডেট বা ডিলিট হয়ে যাবে!
+4. **SQL Injection এর সুযোগ দেওয়া:** কখনো টেমপ্লেট লিটারেল `` `SELECT * FROM homes WHERE id = ${id}` `` ব্যবহার করবেন না। সর্বদা `?` প্লেসহোল্ডার ব্যবহার করুন।
+
+### 💡 Syntax &amp; Errors Practice
+> [!IMPORTANT]
+> **কুইক রিভিশন পয়েন্টস (Quick Revision Points):**
+> Flashcards covering SQL commands, array destructuring of rows/fields, and common error fixes in Node.js MySQL integration.
+
+## Summary &amp; Quick Revision
+
+### Quick Revision
+
+* ফাইল সিস্টেম ছোট কাজের জন্য ভালো হলেও বড় অ্যাপ্লিকেশনে ডাটা সিকিউরিটি, পারফরম্যান্স ও কনকারেন্সির জন্য **DBMS/SQL** ডাটাবেস প্রয়োজন।
+* **SQL** টেবিল নির্ভর এবং স্ট্রাকচার্ড; **NoSQL** ডকুমেন্ট ভিত্তিক এবং ফ্লেক্সিবল।
+* **mysql2** এর `createPool()` ব্যবহার করে পারফরম্যান্ট ডাটাবেস কানেকশন তৈরি করা হয়।
+* **Parameterized Queries (** **?** **)** ব্যবহার করলে **SQL Injection** আক্রমণ প্রতিরোধ করা যায়।
+* `db.execute()` প্রমিস রিটার্ন করে, যেখান থেকে অ্যারে ডিস্ট্রাকচারিংয়ের মাধ্যমে মানসমূহ বের করা হয়: `const [rows] = await db.execute(...)`
+
+### Important Methods / Packages
+
+* **mysql2** **:** MySQL সংযোগের প্যাকেজ।
+* **mysql.createPool()** **:** কানেকশন পুল তৈরি করার ফাংশন।
+* **pool.promise()** **:** প্রমিস ভিত্তিক এপিআই সক্রিয় করে।
+* **db.execute(query, [params])** **:** নিরাপদে SQL কোয়েরি চালানোর মেথড।
+
+### Important Terms
+
+* **Schema:** ডাটাবেসের সামগ্রিক ডিজাইন বা কাঠামো।
+* **Primary Key:** টেবিলের ইউনিক আইডেন্টিফায়ার।
+* **SQL Injection:** ইনপুট ফিল্ড দিয়ে অনাকাঙ্ক্ষিত কোড চালিয়ে ডাটাবেস হ্যাক করার পদ্ধতি।
+* **Connection Pool:** রিইউজেবল কানেকশনের দল।
+
+### What I Must Remember
+
+1. ডায়নামিক ভ্যালু পাস করার সময় কোয়েরির ভেতর সরাসরি ভ্যারিয়েবল বসাবেন না; সবসময় `?` প্লেসহোল্ডার ও প্যারামিটার অ্যারে ব্যবহার করবেন।
+2. `UPDATE` এবং `DELETE` কোয়েরিতে সবসময় `WHERE` শর্ত যুক্ত করতে হবে।
+
+### Practice Questions
+
+1. ফাইল সিস্টেমে ডাটা রাখার চেয়ে SQL ডাটাবেস ব্যবহারের ২টি প্রধান সুবিধা কী কী?
+2. SQL ডাটাবেসে Vertical Scaling এবং NoSQL ডাটাবেসে Horizontal Scaling বলতে কী বোঝায়?
+3. `mysql2` প্যাকেজে কেন তৈরি করা কানেকশন পুলকে `pool.promise()` করা হয়?
+4. SQL Injection কী এবং Parameterized Query কীভাবে এটি প্রতিরোধ করে?
+5. `db.execute()` মেথড থেকে প্রাপ্ত রেজাল্ট ডিস্ট্রাকচার করার সময় প্রথম উপাদানটি (`rows`) কী নির্দেশ করে?
