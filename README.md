@@ -8,15 +8,15 @@
 
 ## 🗺️ রিপোজিটরি নেভিগেশন (Repository Navigation)
 
-| প্রযুক্তি ট্র্যাক | বিবরণ (Description) | নোটস ডিরেক্টরি | প্রস্তুতকৃত লেসন সংখ্যা | স্ট্যাটাস |
+| প্রযুক্তি ট্র্যাক | বিবরণ (Description) | নোটস ডিরেক্টরি | প্রস্তুতকৃত লেসন সংখ্যা | লার্নিং স্ট্যাটাস |
 |---|---|:---:|:---:|:---:|
-| **Node.js** | সার্ভার-সাইড রানটাইম, V8 ইঞ্জিন, Streams, Event Loop এবং কোর মডিউল | [`/Node.js`](./Node.js/) | ৮টি লেসন | 🟢 Active |
-| **Express.js** | ফ্লেক্সিবল ওয়েব ফ্রেমওয়ার্ক, মিডলওয়্যার, MVC, Routing, Auth ও Uploads | [`/Express.js`](./Express.js/) | ১১টি লেসন | 🟢 Active |
-| **MongoDB** | NoSQL ডেটাবেস, BSON, Compass, Atlas কানেকশন ও Mongoose ODM | [`/MongoDB`](./MongoDB/) | ৩টি লেসন | 🟢 Active |
-| **JavaScript** | ভাষা ফান্ডামেন্টালস, Functions, Closures এবং Asynchronous JS | [`/JavaScript`](./JavaScript/) | ফাউন্ডেশন | 🟡 Roadmap |
-| **React** | ফ্রন্টএন্ড UI কম্পোনেন্টস, Hooks, State Management ও SPA | [`/React`](./React/) | ফ্রন্টএন্ড | ⚪ Roadmap |
+| **Node.js** | সার্ভার-সাইড রানটাইম, V8 ইঞ্জিন, Streams, Event Loop এবং কোর মডিউল | [`/Node.js`](./Node.js/) | ৮টি লেসন | 🟢 Completed |
+| **Express.js** | ফ্লেক্সিবল ওয়েব ফ্রেমওয়ার্ক, মিডলওয়্যার, MVC, Routing, Auth ও Uploads | [`/Express.js`](./Express.js/) | ১১টি লেসন | 🟢 Completed |
+| **MongoDB** | NoSQL ডেটাবেস, BSON, Compass, Atlas কানেকশন ও Mongoose ODM | [`/MongoDB`](./MongoDB/) | ৩টি লেসন | 🟢 Completed |
+| **JavaScript** | ভাষা ফান্ডামেন্টালস, Functions, Closures এবং Asynchronous JS | [`/JavaScript`](./JavaScript/) | ৩টি মডিউল | 🟢 Completed |
+| **React** | ফ্রন্টএন্ড UI কম্পোনেন্টস, Hooks, State Management ও SPA | [`/React`](./React/) | ৩টি মডিউল | 🟡 In Progress |
 
-> 📊 **সম্পূর্ণ শেখার অগ্রগতি ও স্ট্যাটাস ট্র্যাক করতে দেখুন: [LEARNING-TRACKER.md](./LEARNING-TRACKER.md)**
+> 📊 **সম্পূর্ণ শেখার অগ্রগতি ও বিস্তারিত বিবরণ দেখতে দেখুন: [LEARNING-TRACKER.md](./LEARNING-TRACKER.md)**
 
 ---
 
