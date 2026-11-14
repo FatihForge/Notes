@@ -1,0 +1,132 @@
+# React Basic Theory Notes
+
+## 1. JSX (JavaScript XML)
+
+**JSX-এর পূর্ণরূপ:** JavaScript XML।
+
+JSX হলো JavaScript-এর একটি Syntax Extension, যা React-এ HTML-এর মতো Syntax ব্যবহার করে UI (User Interface) তৈরি করতে সাহায্য করে।
+
+**উদাহরণ:**
+
+```jsx
+const element = <h1>Hello World!</h1>;
+```
+
+এখানে `<h1>` দেখতে HTML-এর মতো হলেও এটি JSX Syntax।
+
+## 2. Props (Properties)
+
+React-এ এক Component থেকে অন্য Component-এ Data Pass করার জন্য Props ব্যবহার করা হয়।
+
+**উদাহরণ:**
+
+```jsx
+function Welcome(props) {
+  return <h1>Hello, {props.name}</h1>;
+}
+
+function App() {
+  return <Welcome name="Ashik" />;
+}
+```
+
+এখানে:
+- `name="Ashik"` হলো পাঠানো Data।
+- `props` হলো সেই Data গ্রহণের মাধ্যম।
+- `props.name` দিয়ে Data Access করা হয়েছে।
+
+## 3. Events (Event Handling)
+
+React-এ User-এর বিভিন্ন Interaction, যেমন Button Click, Input Change ইত্যাদি Handle করার জন্য Event Handling ব্যবহার করা হয়।
+
+**উদাহরণ:**
+
+```jsx
+function App() {
+  function handleClick() {
+    alert("Button Clicked!");
+  }
+
+  return (
+    <button onClick={handleClick}>
+      Click Me
+    </button>
+  );
+}
+```
+
+এখানে:
+- `onClick` হলো একটি Event Handler।
+- `handleClick` হলো Event ঘটলে Execute হওয়া Function।
+- Button Click করলে Function-টি Execute হবে।
+
+## 4. React Hooks – useState()
+
+`useState` হলো React-এর একটি Hook, যা Functional Component-এর মধ্যে State সংরক্ষণ ও পরিবর্তন করতে ব্যবহার করা হয়।
+
+**Syntax:**
+
+```jsx
+const [count, setCount] = useState(0);
+```
+
+এখানে:
+- `useState` → React-এর একটি Hook।
+- `count` → বর্তমান State Value।
+- `setCount` → State পরিবর্তনের Function।
+- `0` → Initial Value বা প্রাথমিক Value।
+
+### useState কীভাবে কাজ করে?
+
+ধরা যাক, একটি Counter তৈরি করা হবে। Button Click করলে সংখ্যা বাড়বে।
+
+```jsx
+import { useState } from "react";
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <h1>{count}</h1>
+
+      <button onClick={() => setCount(count + 1)}>
+        Increase
+      </button>
+    </div>
+  );
+}
+
+export default Counter;
+```
+
+### Working Process
+
+1. প্রথমবার Component Render হলে `count`-এর Initial Value থাকে `0`।
+2. User Button-এ Click করে।
+3. `setCount(count + 1)` Execute হয়।
+4. React State Update করে।
+5. React Component Function-টি আবার Execute করে (Re-render)।
+6. নতুন State অনুযায়ী UI Update হয়।
+
+### গুরুত্বপূর্ণ বিষয়
+
+- `useState` → State সংরক্ষণ করে।
+- `setCount` → State পরিবর্তনের জন্য React-কে জানায়।
+- Re-render → Component Function আবার Execute হয়।
+- UI Update → নতুন State অনুযায়ী UI-তে পরিবর্তন দেখা যায়।
+
+**মনে রাখবে:** `useState` নিজে সরাসরি UI Refresh করে না। State পরিবর্তন হলে React Component-কে Re-render করে এবং প্রয়োজন অনুযায়ী UI Update করে। এতে পুরো Website Refresh হয় না।
+
+---
+
+## Quick Revision
+
+| Topic | কাজ |
+|---|---|
+| JSX | HTML-এর মতো Syntax দিয়ে UI তৈরি |
+| Props | এক Component থেকে অন্য Component-এ Data Pass |
+| Events | User Interaction Handle |
+| useState | Component-এর State সংরক্ষণ ও পরিবর্তন |
+
+**মূল ধারণা:** React-এ JSX দিয়ে UI তৈরি করা হয়, Props দিয়ে Component-এর মধ্যে Data আদান-প্রদান করা হয়, Events দিয়ে User Interaction Handle করা হয় এবং useState দিয়ে পরিবর্তনশীল Data নিয়ন্ত্রণ করা হয়।

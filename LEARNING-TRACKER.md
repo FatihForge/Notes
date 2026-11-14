@@ -73,15 +73,15 @@
 
 | লেসন | বিষয় / টপিক (Topic) | নোটস লিংক | ডকুমেন্টেশন স্ট্যাটাস | লার্নিং স্ট্যাটাস |
 |:---:|---|:---:|:---:|:---:|
-| 01 | **React ফান্ডামেন্টালস ও JSX (Components)** | [01-components-jsx](./React/README.md) | ⚪ In Roadmap | 🟡 In Progress |
-| 02 | **স্টেট ও প্রপস (State & Props)** | [02-state-and-props](./React/README.md) | ⚪ In Roadmap | 🟡 In Progress |
-| 03 | **এসেনশিয়াল হুকস (useState, useEffect)** | [03-react-hooks](./React/README.md) | ⚪ In Roadmap | 🟡 In Progress |
+| 01 | **React ফান্ডামেন্টালস: JSX, Props, Events ও useState** | [01-react-fundamentals](./React/01-react-fundamentals/) | 📘 Notes Prepared | 🟡 In Progress |
+| 02 | **সাইড ইফেক্টস ও লাইফসাইকেল (`useEffect`)** | [02-useeffect-lifecycle](./React/README.md) | ⚪ Roadmap | ⚪ Not Started |
+| 03 | **ফর্ম ও ইনপুট হ্যান্ডলিং (Controlled Components)** | [03-forms-inputs-handling](./React/README.md) | ⚪ Roadmap | ⚪ Not Started |
 
 ---
 
 ## 📈 সামগ্রিক পরিসংখ্যান (Overall Dashboard Summary)
 
 - **মোট ট্র্যাক সংখ্যা:** ৫টি (Node.js, Express.js, MongoDB, JavaScript, React)
-- **মোট সম্পন্ন (Completed):** ২৫টি টপিক (Node.js: ৮, Express.js: ১১, MongoDB: ৩, JavaScript: ৩)
+- **মোট সম্পন্ন (Completed):** ২৫টি টপিক
+- **প্রস্তুতকৃত লেসন নোটস (Notes Prepared):** ২৩টি (Node.js: ৮, Express.js: ১১, MongoDB: ৩, React: ১)
 - **শেখা চলমান (In Progress):** React Track
-- **প্রস্তুতকৃত নোটস (Notes Prepared):** ২২টি সম্পূর্ণ লেসন
