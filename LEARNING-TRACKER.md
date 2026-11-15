@@ -16,7 +16,26 @@
 
 ---
 
-## 1. 🟢 Node.js Core Track
+## 1. ⚡ JavaScript Foundation & Core Language Track
+
+| লেসন | বিষয় / টপিক (Topic) | নোটস লিংক (Notes Link) | ডকুমেন্টেশন স্ট্যাটাস | লার্নিং স্ট্যাটাস |
+|:---:|---|:---:|:---:|:---:|
+| 01 | **Basics, Variables & Data Types** | [01-basics-variables-data-types](./JavaScript/01-basics-variables-data-types/) | 📘 Notes Prepared | 🟢 Completed |
+| 02 | **Operators & Conditional Statements** | [02-operators-conditional-statements](./JavaScript/02-operators-conditional-statements/) | 📘 Notes Prepared | 🟢 Completed |
+| 03 | **Loops & Strings in JavaScript** | [03-loops-and-strings](./JavaScript/03-loops-and-strings/) | 📘 Notes Prepared | 🟢 Completed |
+| 04 | **Arrays in JavaScript** | [04-arrays](./JavaScript/04-arrays/) | 📘 Notes Prepared | 🟢 Completed |
+| 05 | **Functions & Methods in JavaScript** | [05-functions-and-methods](./JavaScript/05-functions-and-methods/) | 📘 Notes Prepared | 🟢 Completed |
+| 06 | **DOM — Document Object Model** | [06-dom-manipulation](./JavaScript/06-dom-manipulation/) | 📘 Notes Prepared | 🟢 Completed |
+| 07 | **Events in JavaScript** | [07-events](./JavaScript/07-events/) | 📘 Notes Prepared | 🟢 Completed |
+| 08 | **Classes & Objects in JavaScript** | [08-classes-and-objects](./JavaScript/08-classes-and-objects/) | 📘 Notes Prepared | 🟢 Completed |
+| 09 | **Callbacks, Promises & Async/Await** | [09-callbacks-promises-async-await](./JavaScript/09-callbacks-promises-async-await/) | 📘 Notes Prepared | 🟢 Completed |
+| 10 | **Fetch API & HTTP Requests** | [10-fetch-api-http-requests](./JavaScript/10-fetch-api-http-requests/) | 📘 Notes Prepared | 🟢 Completed |
+| 11 | **Closures & Execution Context** | [11-closures-execution-context](./JavaScript/11-closures-execution-context/) | 📘 Notes Prepared | 🟢 Completed |
+| 12 | **JavaScript Methods Overview** | [12-methods-overview](./JavaScript/12-methods-overview/) | 📘 Notes Prepared | 🟢 Completed |
+
+---
+
+## 2. 🟢 Node.js Core Track
 
 | লেসন | বিষয় / টপিক (Topic) | নোটস লিংক (Notes Link) | ডকুমেন্টেশন স্ট্যাটাস | লার্নিং স্ট্যাটাস |
 |:---:|---|:---:|:---:|:---:|
@@ -31,7 +50,7 @@
 
 ---
 
-## 2. 🚀 Express.js Web Framework Track
+## 3. 🚀 Express.js Web Framework Track
 
 | লেসন | বিষয় / টপিক (Topic) | নোটস লিংক (Notes Link) | ডকুমেন্টেশন স্ট্যাটাস | লার্নিং স্ট্যাটাস |
 |:---:|---|:---:|:---:|:---:|
@@ -49,23 +68,13 @@
 
 ---
 
-## 3. 🍃 MongoDB & Mongoose Database Track
+## 4. 🍃 MongoDB & Mongoose Database Track
 
 | লেসন | বিষয় / টপিক (Topic) | নোটস লিংক (Notes Link) | ডকুমেন্টেশন স্ট্যাটাস | লার্নিং স্ট্যাটাস |
 |:---:|---|:---:|:---:|:---:|
 | 01 | **ডেটাবেসের প্রয়োজনীয়তা ও SQL বনাম NoSQL** | [01-databases-sql-vs-nosql](./MongoDB/01-databases-sql-vs-nosql/) | 📘 Notes Prepared | 🟢 Completed |
 | 02 | **MongoDB আর্কিটেকচার, Compass, Atlas ও CRUD** | [02-mongodb-fundamentals-crud](./MongoDB/02-mongodb-fundamentals-crud/) | 📘 Notes Prepared | 🟢 Completed |
 | 03 | **Mongoose ODM, স্কিমা, মডেল ও ভ্যালিডেশন** | [03-mongoose-odm](./MongoDB/03-mongoose-odm/) | 📘 Notes Prepared | 🟢 Completed |
-
----
-
-## 4. ⚡ JavaScript Track (Foundation)
-
-| লেসন | বিষয় / টপিক (Topic) | নোটস লিংক | ডকুমেন্টেশন স্ট্যাটাস | লার্নিং স্ট্যাটাস |
-|:---:|---|:---:|:---:|:---:|
-| 01 | **ফান্ডামেন্টালস (Data Types, Scope, Hoisting)** | [01-fundamentals](./JavaScript/README.md) | 📘 Foundation | 🟢 Completed |
-| 02 | **ফাংশনস ও ক্লোজার (Functions, Closures)** | [02-functions](./JavaScript/README.md) | 📘 Foundation | 🟢 Completed |
-| 03 | **অ্যাসিনক্রোনাস জাভাস্ক্রিপ্ট (Promises, Async/Await)** | [03-async-js](./JavaScript/README.md) | 📘 Foundation | 🟢 Completed |
 
 ---
 
@@ -81,7 +90,7 @@
 
 ## 📈 সামগ্রিক পরিসংখ্যান (Overall Dashboard Summary)
 
-- **মোট ট্র্যাক সংখ্যা:** ৫টি (Node.js, Express.js, MongoDB, JavaScript, React)
-- **মোট সম্পন্ন (Completed):** ২৫টি টপিক
-- **প্রস্তুতকৃত লেসন নোটস (Notes Prepared):** ২৩টি (Node.js: ৮, Express.js: ১১, MongoDB: ৩, React: ১)
+- **মোট ট্র্যাক সংখ্যা:** ৫টি (JavaScript, Node.js, Express.js, MongoDB, React)
+- **মোট প্রস্তুতকৃত লেসন নোটস (Notes Prepared):** ৩৫টি (JavaScript: ১২, Node.js: ৮, Express.js: ১১, MongoDB: ৩, React: ১)
+- **মোট সম্পন্ন (Completed):** ৩৪টি টপিক
 - **শেখা চলমান (In Progress):** React Track
