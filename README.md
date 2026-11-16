@@ -1,6 +1,6 @@
-# 📚 FatihForge Notes: Full-Stack MERN Technical Documentation & Study Guide
+# 📚 FatihForge Notes: Full-Stack MERN & TypeScript Technical Documentation
 
-স্বাগতম! এটি আমার **MERN Stack (MongoDB, Express.js, React, Node.js)** এবং এর ভিত্তি **JavaScript**-এর একটি পূর্ণাঙ্গ, সুসংগঠিত, টেকনিক্যাল স্টাডি রিপোজিটরি।
+স্বাগতম! এটি আমার **MERN Stack (MongoDB, Express.js, React, Node.js)**, **JavaScript** এবং **TypeScript**-এর একটি পূর্ণাঙ্গ, সুসংগঠিত, টেকনিক্যাল স্টাডি রিপোজিটরি।
 
 প্রতিটি চ্যাপ্টারের মূল তাত্ত্বিক আলোচনা, আর্কিটেকচার ডায়াগ্রাম, প্র্যাকটিক্যাল কোড এক্সাম্পল, টার্মিনাল আউটপুট, কমন ভুল এবং সেলফ-অ্যাসেসমেন্ট প্রশ্নাবলী সংযুক্ত করে পেশাদার মানের রঙিন ও আকর্ষণীয় ডকুমেন্টেশন তৈরি করা হয়েছে।
 
@@ -11,6 +11,7 @@
 | প্রযুক্তি ট্র্যাক | বিবরণ (Description) | নোটস ডিরেক্টরি | প্রস্তুতকৃত লেসন সংখ্যা | লার্নিং স্ট্যাটাস |
 |---|---|:---:|:---:|:---:|
 | **JavaScript** | ভাষা ফান্ডামেন্টালস, Functions, DOM, Classes, Async JS ও Closures | [`/JavaScript`](./JavaScript/) | ১২টি লেসন | 🟢 Completed |
+| **TypeScript** | স্ট্যাটিক টাইপ চেকার, Superset, `tsconfig`, Type System ও Compilation | [`/TypeScript`](./Typescript/) | ১টি লেসন (প্রস্তুত) | 🟡 In Progress |
 | **Node.js** | সার্ভার-সাইড রানটাইম, V8 ইঞ্জিন, Streams, Event Loop এবং কোর মডিউল | [`/Node.js`](./Node.js/) | ৮টি লেসন | 🟢 Completed |
 | **Express.js** | ফ্লেক্সিবল ওয়েব ফ্রেমওয়ার্ক, মিডলওয়্যার, MVC, Routing, Auth ও Uploads | [`/Express.js`](./Express.js/) | ১১টি লেসন | 🟢 Completed |
 | **MongoDB** | NoSQL ডেটাবেস, BSON, Compass, Atlas কানেকশন ও Mongoose ODM | [`/MongoDB`](./MongoDB/) | ৩টি লেসন | 🟢 Completed |
@@ -42,6 +43,11 @@ Notes/
 │   ├── 10-fetch-api-http-requests/
 │   ├── 11-closures-execution-context/
 │   └── 12-methods-overview/
+│
+├── TypeScript/                              # TypeScript Static Typing & Compilation
+│   ├── README.md
+│   ├── src/                                 # মূল সোর্স নোট
+│   └── 01-basics-setup-and-types/           # লেকচার ০১: ইনস্টলেশন ও টাইপ সিস্টেম
 │
 ├── Node.js/                                 # Node.js Core Architecture (৮টি লেসন)
 │   ├── README.md
@@ -83,9 +89,9 @@ Notes/
 
 ## 🎯 নোটের বৈশিষ্ট্য ও লেখার মানদণ্ড (Documentation Standards)
 
-1. **সহজ ও প্রাঞ্জল বাংলা:** কঠিন কনসেপ্টগুলোকে সহজ ভাষায় ব্যাখ্যা করা হয়েছে, তবে সমস্ত টেকনিক্যাল টার্ম (যেমন: JSX, Virtual DOM, Props, State, Closures, Event Loop, Non-blocking I/O) ইংরেজিতে রাখা হয়েছে।
+1. **সহজ ও প্রাঞ্জল বাংলা:** কঠিন কনসেপ্টগুলোকে সহজ ভাষায় ব্যাখ্যা করা হয়েছে, তবে সমস্ত টেকনিক্যাল টার্ম (যেমন: Superset, Static Typing, Type Inference, Transpilation, Generics, Event Loop) ইংরেজিতে রাখা হয়েছে।
 2. **রঙিন ও আকর্ষণীয় প্রেজেন্টেশন (Colorful Markdown):** GitHub Alerts (`[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`), ব্যাজ এবং ইমোজি ব্যবহার করে দৃষ্টিনন্দন স্টাডি মেটেরিয়াল।
-3. **আর্কিটেকচার ডায়াগ্রাম ও চার্ট:** প্রতিটি মডিউলে ডেটা প্রবাহ এবং ইন্টারনাল রেন্ডারিং লাইফসাইকেল চিত্রায়িত করতে ASCII এবং টেক্সট ডায়াগ্রাম যুক্ত।
+3. **আর্কিটেকচার ডায়াগ্রাম ও চার্ট:** প্রতিটি মডিউলে ডেটা প্রবাহ, ট্রান্সপাইলেশন মেকানিজম এবং ইন্টারনাল রেন্ডারিং লাইফসাইকেল চিত্রায়িত করতে ASCII এবং টেক্সট ডায়াগ্রাম যুক্ত।
 4. **প্র্যাকটিক্যাল কোড ও আউটপুট:** প্রতিটি লেসনের কোড সিনট্যাক্স-হাইলাইটেড এবং টার্মিনাল/ব্রাউজার আউটপুটসহ সংকলিত।
 5. **কমন ভুল ও প্রতিকার (Common Mistakes):** নতুনদের সম্ভাব্য ভুলগুলো চিহ্নিত করে আগাম সতর্কবার্তা যুক্ত।
 6. **ভবিষ্যতের রিভিশন প্রস্তুতি:** প্রতিটি চ্যাপ্টারে কুইক সামারি এবং ইন্টারভিউ উপযোগী স্ব-মূল্যায়ন প্রশ্নাবলী সংযুক্ত।

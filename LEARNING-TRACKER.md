@@ -1,6 +1,6 @@
-# 📊 MERN Stack Learning Tracker & Progress Dashboard
+# 📊 MERN & TypeScript Stack Learning Tracker & Progress Dashboard
 
-এই ডকুমেন্টে আমার সম্পূর্ণ **MERN Stack (MongoDB, Express.js, React, Node.js)** এবং **JavaScript** শেখার অগ্রগতি কেন্দ্রীয়ভাবে ট্র্যাক করা হয়।
+এই ডকুমেন্টে আমার সম্পূর্ণ **MERN Stack (MongoDB, Express.js, React, Node.js)**, **JavaScript** এবং **TypeScript** শেখার অগ্রগতি কেন্দ্রীয়ভাবে ট্র্যাক করা হয়।
 
 ---
 
@@ -35,7 +35,17 @@
 
 ---
 
-## 2. 🟢 Node.js Core Track
+## 2. 🔷 TypeScript Track
+
+| লেসন | বিষয় / টপিক (Topic) | নোটস লিংক (Notes Link) | ডকুমেন্টেশন স্ট্যাটাস | লার্নিং স্ট্যাটাস |
+|:---:|---|:---:|:---:|:---:|
+| 01 | **TypeScript বেসিকস: ইনস্টলেশন, কম্পাইলেশন ও টাইপ সিস্টেম** | [01-basics-setup-and-types](./Typescript/01-basics-setup-and-types/) | 📘 Notes Prepared | 🟡 In Progress |
+| 02 | **ফাংশন টাইপিং ও সিগনেচার (Functions & Signatures)** | [02-functions-and-signatures](./Typescript/README.md) | ⚪ Roadmap | ⚪ Not Started |
+| 03 | **ইন্টারফেস ও টাইপ অ্যালিয়াস (Interfaces & Type Aliases)** | [03-interfaces-and-type-aliases](./Typescript/README.md) | ⚪ Roadmap | ⚪ Not Started |
+
+---
+
+## 3. 🟢 Node.js Core Track
 
 | লেসন | বিষয় / টপিক (Topic) | নোটস লিংক (Notes Link) | ডকুমেন্টেশন স্ট্যাটাস | লার্নিং স্ট্যাটাস |
 |:---:|---|:---:|:---:|:---:|
@@ -50,7 +60,7 @@
 
 ---
 
-## 3. 🚀 Express.js Web Framework Track
+## 4. 🚀 Express.js Web Framework Track
 
 | লেসন | বিষয় / টপিক (Topic) | নোটস লিংক (Notes Link) | ডকুমেন্টেশন স্ট্যাটাস | লার্নিং স্ট্যাটাস |
 |:---:|---|:---:|:---:|:---:|
@@ -68,7 +78,7 @@
 
 ---
 
-## 4. 🍃 MongoDB & Mongoose Database Track
+## 5. 🍃 MongoDB & Mongoose Database Track
 
 | লেসন | বিষয় / টপিক (Topic) | নোটস লিংক (Notes Link) | ডকুমেন্টেশন স্ট্যাটাস | লার্নিং স্ট্যাটাস |
 |:---:|---|:---:|:---:|:---:|
@@ -78,7 +88,7 @@
 
 ---
 
-## 5. ⚛️ React Track (Frontend)
+## 6. ⚛️ React Track (Frontend)
 
 | লেসন | বিষয় / টপিক (Topic) | নোটস লিংক | ডকুমেন্টেশন স্ট্যাটাস | লার্নিং স্ট্যাটাস |
 |:---:|---|:---:|:---:|:---:|
@@ -90,7 +100,7 @@
 
 ## 📈 সামগ্রিক পরিসংখ্যান (Overall Dashboard Summary)
 
-- **মোট ট্র্যাক সংখ্যা:** ৫টি (JavaScript, Node.js, Express.js, MongoDB, React)
-- **মোট প্রস্তুতকৃত লেসন নোটস (Notes Prepared):** ৩৫টি (JavaScript: ১২, Node.js: ৮, Express.js: ১১, MongoDB: ৩, React: ১)
+- **মোট ট্র্যাক সংখ্যা:** ৬টি (JavaScript, TypeScript, Node.js, Express.js, MongoDB, React)
+- **মোট প্রস্তুতকৃত লেসন নোটস (Notes Prepared):** ৩৬টি (JS: ১২, TS: ১, Node: ৮, Express: ১১, MongoDB: ৩, React: ১)
 - **মোট সম্পন্ন (Completed):** ৩৪টি টপিক
-- **শেখা চলমান (In Progress):** React Track
+- **শেখা চলমান (In Progress):** ২টি ট্র্যাক (TypeScript, React)
