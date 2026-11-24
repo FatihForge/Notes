@@ -1,0 +1,742 @@
+Next.js ক্র্যাশ কোর্স: সম্পূর্ণ টেকনিক্যাল ও প্র্যাকটিক্যাল গাইড
+
+১. ভূমিকা এবং ক্লায়েন্ট-সাইড বনাম সার্ভার-সাইড রেন্ডারিং (CSR vs SSR) [Video Timestamp: 00:00]
+
+আধুনিক ওয়েব অ্যাপ্লিকেশন আর্কিটেকচারে রেন্ডারিং স্ট্র্যাটেজি (Rendering Strategy) পারফরম্যান্স, মেমোরি ম্যানেজমেন্ট এবং ইউজার এক্সপেরিয়েন্স নির্ধারণে সবচেয়ে গুরুত্বপূর্ণ ভূমিকা পালন করে। ঐতিহ্যবাহী রিয়্যাক্ট (React) সিঙ্গেল পেজ অ্যাপ্লিকেশনগুলোতে (SPA) মূলত ক্লায়েন্ট-সাইড রেন্ডারিং (Client-Side Rendering - CSR) ব্যবহৃত হয়ে আসছে। তবে অ্যাপ্লিকেশন স্কেল করার সাথে সাথে CSR-এর আর্কিটেকচারাল সীমাবদ্ধতাগুলো প্রকট হয়ে ওঠে। এই পারফরম্যান্স বটleneck-গুলোর স্থায়ী সমাধান হিসেবে Next.js 14-এর আত্মপ্রকাশ, যা সার্ভার-সাইড রেন্ডারিং (Server-Side Rendering - SSR) এবং নতুন রেন্ডারিং প্যারাডাইমের মাধ্যমে ওয়েব ডেভেলপমেন্টে এক নতুন মানদণ্ড স্থাপন করেছে।
+
+Client-Side Rendering (CSR) এবং এর আর্কিটেকচারাল সীমাবদ্ধতা
+
+CSR পদ্ধতিতে ব্রাউজার যখন সার্ভারে একটি এইচটিটিপি রিকোয়েস্ট পাঠায়, তখন সার্ভার থেকে কেবল একটি "Unrendered Empty Shell HTML" বা শূন্য এইচটিটিপি রেসপন্স এবং সাথে একটি বিশাল সাইজের জাভাস্ক্রিপ্ট বান্ডেল পাঠায়।
+
+[Browser Request] ──> [Server Returns: Empty HTML Shell + Bundle.js]
+                             │
+                             ▼ (Screen is Blank)
+                     [Download JavaScript]
+                             │
+                             ▼
+                     [Parse & Execute JS]
+                             │
+                             ▼
+                     [Fetch Data via API]
+                             │
+                             ▼
+                     [Render UI & DOM Injection]
+
+
+<!-- CSR-এ সার্ভার থেকে আসা প্রাথমিক HTML-এর উদাহরণ -->
+<!DOCTYPE html>
+<html lang="bn">
+  <head>
+    <title>CSR Application</title>
+  </head>
+  <body>
+    <div id="root"></div> <!-- সম্পূর্ণ খালি কন্টেনার -->
+    <script src="/static/js/bundle.js"></script> <!-- ব্রাউজার জাভাস্ক্রিপ্ট ডাউনলোড ও এক্সিকিউট করার পর DOM তৈরি হয় -->
+  </body>
+</html>
+
+
+পারফরম্যান্স মেট্রিক্স ও SEO-তে CSR-এর নেতিবাচক প্রভাব
+
+১. First Contentful Paint (FCP): ব্যবহারকারী ইউআরএল এন্টার করার পর স্ক্রিনে প্রথম কোনো ভিজ্যুয়াল কন্টেন্ট দেখানোর সময়। CSR-এ ব্রাউজার যতক্ষণ না পুরো জাভাস্ক্রিপ্ট বান্ডেল ডাউনলোড ও প্রসেস করে, ততক্ষণ পর্যন্ত FCP শূন্য থাকে। ২. Time to Interactive (TTI): স্ক্রিনে কন্টেন্ট দৃশ্যমান হওয়ার পর ব্যবহারকারী সেটিতে ইন্টারঅ্যাক্ট (যেমন ক্লিক বা টাইপ) করার যোগ্যতা অর্জন। CSR-এ বিশাল বান্ডেল প্রসেস হতে অতিরিক্ত সময় লাগায় TTI মারাত্মকভাবে ক্ষতিগ্রস্ত হয়।
+
+SEO এবং সাকসেস ক্রলিং সমস্যা: Googlebot বা অন্যান্য সার্চ ইঞ্জিন ক্রলার যখন কোনো পেজে ইনডেক্স করতে আসে, তখন তারা মূলত প্রথম এইচটিটিপি রেসপন্স রিড করে। CSR-এ সার্ভার থেকে খালি HTML পাঠানো হয় বলে ক্রলাররা পেজের টেক্সট, মেটাডেটা বা কন্টেন্ট পার্স করতে অক্ষম হয়। যদিও আধুনিক ক্রলার জাভাস্ক্রিপ্ট এক্সিকিউট করতে পারে, কিন্তু সময় ও বাজেটের সীমাবদ্ধতার কারণে ইনডেক্সিং পিছিয়ে পড়ে।
+
+Server-Side Rendering (SSR)-এর সমাধান
+
+Server-Side Rendering (SSR) পদ্ধতিতে রিকোয়েস্ট আসার পর সার্ভার স্বয়ংক্রিয়ভাবে কম্পোনেন্টগুলোকে এক্সিকিউট করে সম্পূর্ণ প্রিপেয়ার্ড এইচটিটিপি এবং প্রাথমিক কন্টেন্ট তৈরি করে ব্রাউজারে সরবরাহ করে।
+
+[Browser Request] ──> [Server Executes Logic & Pre-renders HTML]
+                             │
+                             ▼
+                    [Returns Hydrated HTML + CSS]
+                             │
+                             ▼ (Instant Content Display - Fast FCP)
+                    [Downloads Client Bundle]
+                             │
+                             ▼
+                    [Hydration: Attaching Listeners] ──> (Fully Interactive - TTI)
+
+
+হাইড্রেশন (Hydration) কী? সার্ভার থেকে প্রস্তুতকৃত এইচটিটিপি ব্রাউজারে রেন্ডার হওয়ার পর এটি মূলত একটি স্ট্যাটিক ভিজ্যুয়াল ক্যানভাস থাকে। এরপর ব্যাকগ্রাউন্ডে ছোট জাভাস্ক্রিপ্ট ফাইল ডাউনলোড হয়ে ওই স্ট্যাটিক এইচটিটিপি মার্কআপের সাথে ইভেন্ট লিসেনার (যেমন onClick, onChange) যুক্ত করে পেজটিকে পুরোপুরি ইন্টারঅ্যাক্টিভ করে তোলে। সার্ভারের স্ট্যাটিক মার্কআপের সাথে ক্লায়েন্টের জাভাস্ক্রিপ্ট ইন্টারঅ্যাক্টিভিটির এই সংযোগ প্রক্রিয়াকেই হাইড্রেশন (Hydration) বলা হয়।
+
+তবে প্রথাগত SSR-এও পুরো পেজকে সার্ভারে প্রসেস করার এবং ক্লায়েন্টে পুরো পেজ হাইড্রেশন করার এক ধরণের ওভারহেড থাকে। এই অপটিমাইজেশনকে আরও নিখুঁত করতে রিয়্যাক্ট আর্কিটেকচারে এসেছে 'রিয়্যাক্ট সার্ভার কম্পোনেন্ট (React Server Components - RSC)'।
+
+২. রিয়্যাক্ট সার্ভার কম্পোনেন্ট (React Server Components - RSC) [Video Timestamp: 05:20]
+
+রিয়্যাক্ট ইকোসিস্টেমে রিয়্যাক্ট সার্ভার কম্পোনেন্ট (RSC) কোনো সাধারণ ফিচার নয়, বরং এটি একটি বৈপ্লবিক স্ট্র্যাটেজিক পরিবর্তন। এটি সার্ভার এবং ক্লায়েন্টের মধ্যে দায়িত্বের বিভাজনকে কম্পোনেন্ট লেভেলে নিয়ে এসেছে। Next.js 14-এ App Router ব্যবহার করলে app ফোল্ডারের প্রতিটি কম্পোনেন্ট বাই-ডিফল্ট সার্ভার কম্পোনেন্ট হিসেবে কাজ করে।
+
+RSC-এর মূল ধারণা এবং Zero Bundle Size
+
+React Server Component সম্পূর্ণভাবে সার্ভার এনভায়রনমেন্টে এক্সিকিউট হয়। এর ফলে:
+
+* Zero Client Bundle Size: সার্ভার কম্পোনেন্টে ব্যবহৃত ভারী ভারী থার্ড-পার্টি ডিপেন্ডেন্সি (যেমন: lodash, moment.js, বা prisma) ব্রাউজারের জাভাস্ক্রিপ্ট বান্ডেলে যুক্ত হয় না। এগুলো সার্ভারেই রান হয়ে কেবল ফলাফলটি (HTML/JSON স্ট্রিম) ক্লায়েন্টে পাঠায়।
+* সরাসরি ব্যাকএন্ড রিসোর্স অ্যাক্সেস: আলাদা কোনো API লেয়ার (REST/GraphQL) তৈরি না করেই সার্ভার কম্পোনেন্টের ভেতর সরাসরি ডেটাবেজ (Prisma, Mongoose, SQL) বা ফাইল সিস্টেমে কোয়েরি করা যায়।
+
+// app/users/page.js
+// Next.js 14-এ এটি বাই-ডিফল্ট একটি React Server Component (RSC)
+import db from '@/lib/db'; // সরাসরি সার্ভার সাইড ডেটাবেজ ক্লায়েন্ট
+
+export default async function UsersPage() {
+  // কোনো API এন্ডপয়েন্ট বা useEffect ছাড়াই সরাসরি সার্ভারে DB কোয়েরি
+  const users = await db.user.findMany();
+
+  return (
+    <main className="p-6">
+      <h1 className="text-2xl font-bold mb-4">ইউজার তালিকা (Server Rendered)</h1>
+      <ul className="space-y-2">
+        {users.map((user) => (
+          <li key={user.id} className="p-3 bg-gray-100 rounded">
+            {user.name} - {user.email}
+          </li>
+        ))}
+      </ul>
+    </main>
+  );
+}
+
+
+দায়িত্বের সুস্পষ্ট বিভাজন (Client-Server Separation)
+
+* সার্ভার কম্পোনেন্ট: ডেটা ফেচিং, ডেটাবেজ অ্যাক্সেস, সংবেদনশীল তথ্য (API Keys/Tokens) গোপন রাখা এবং ভারী লজিক প্রসেস করার জন্য ব্যবহার করা হয়।
+* ক্লায়েন্ট কম্পোনেন্ট: ব্রাউজার ইন্টারঅ্যাক্টিভিটি, স্টেট ম্যানেজমেন্ট (useState, useReducer), সাইড ইফেক্ট (useEffect) এবং ডোমে সরাসরি ইভেন্ট লিসেনিং করার জন্য নির্ধারিত।
+
+RSC-এর এই আর্কিটেকচারাল সুবিধাগুলো নিটিভভাবে ব্যবহারের জন্য Next.js 14-এর ফোল্ডার স্ট্রাকচার এবং সেটআপ বোঝা আবশ্যক।
+
+৩. Next.js 14 প্রজেক্ট সেটআপ এবং ফোল্ডার স্ট্রাকচার [Video Timestamp: 11:45]
+
+Next.js 14 প্রজেক্ট তৈরি এবং পরিচালনা করতে ইন্টারঅ্যাক্টিভ CLI টুল create-next-app ব্যবহার করা হয়, যা প্রোডাকশন-রেডি ফোল্ডার আর্কিটেকচার প্রদান করে।
+
+প্রজেক্ট সেটআপ নির্দেশিকা
+
+টার্মিনালে নিচের কমান্ডটি এক্সিকিউট করতে হবে:
+
+npx create-next-app@latest
+
+
+কমান্ডটি রান করার পর CLI টার্মিনালে বেশ কিছু কনফিগারেশন প্রশ্ন উত্থাপন করবে:
+
+* What is your project named? -> my-next-app
+* Would you like to use TypeScript? -> No / Yes
+* Would you like to use ESLint? -> Yes
+* Would you like to use Tailwind CSS? -> Yes
+* Would you like to use 'src/' directory? -> No (বা আপনার পছন্দ অনুযায়ী)
+* Would you like to use App Router? (recommended) -> Yes (বাধ্যতামূলক)
+* Would you like to customize the default import alias (@/*)? -> Yes
+
+App Router-এর আর্কিটেকচার ও ফাইল কনভেনশন
+
+Next.js 14-এ ফাইল-সিস্টেম ভিত্তিক রাউটিং সরাসরি app ফোল্ডারের ওপর নির্ভর করে:
+
+* app/page.js: নির্দিষ্ট রুটের প্রধান ভিউ নির্দেশ করে (যেমন: / রুটের জন্য app/page.js)।
+* app/layout.js: অ্যাপ্লিকেশনের গ্লোবাল লেআউট ফাইল। সব পেজের এইচটিটিপি স্ট্রাকচার এর মাধ্যমে রেন্ডার হয়।
+
+বেসিক "Hello World" পেজ
+
+// app/page.js
+export default function HomePage() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+      <h1 className="text-4xl font-bold">Hello World</h1>
+      <p className="text-lg">Next.js 14 আর্কিটেকচারে আপনাকে স্বাগতম!</p>
+    </main>
+  );
+}
+
+
+Root Layout-এর আর্কিটেকচারাল ভূমিকা
+
+RootLayout হলো অ্যাপ্লিকেশনের শীর্ষস্থানীয় কম্পোনেন্ট। এটি নিশ্চিত করে যে প্রতিটি পেজ একজাতীয় HTML স্ট্রাকচার (যেমন <html> ও <body> ট্যাগ) ধারণ করবে এবং বিশ্বজনীন উপাদানসমূহ (যেমন Header, Nav, Footer) ধরে রাখবে।
+
+// app/layout.js
+import './globals.css';
+
+export const metadata = {
+  title: 'Next.js 14 ক্র্যাশ কোর্স',
+  description: 'Senior Technical Lead গাইডলাইন অনুযায়ী নির্মিত',
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="bn">
+      <body className="antialiased bg-white text-gray-900">
+        <header className="w-full p-4 bg-slate-900 text-white flex justify-between items-center">
+          <h1 className="text-xl font-bold">LWS Application</h1>
+          <nav className="space-x-4">
+            <a href="/" className="hover:underline">Home</a>
+            <a href="/about" className="hover:underline">About</a>
+          </nav>
+        </header>
+        
+        {/* নির্দিষ্ট পেজের কন্টেন্ট এখানে রেন্ডার হবে */}
+        <div className="container mx-auto px-4 py-6">
+          {children}
+        </div>
+        
+        <footer className="p-4 bg-gray-100 border-t text-center text-sm">
+          © 2024 Learn with Sumit - All rights reserved.
+        </footer>
+      </body>
+    </html>
+  );
+}
+
+
+এই মৌলিক কাঠামোর ওপর ভিত্তি করে একাধিক সেগমেন্ট তৈরি ও পরিচালনা করার পদ্ধতি পরবর্তী অধ্যায়ে বিশ্লেষণ করা হয়েছে।
+
+৪. নেস্টেড রাউটিং এবং লেআউট সেগমেন্ট (Nested Routing & Layout Segments) [Video Timestamp: 18:30]
+
+অ্যাপ্লিকেশনের বিভিন্ন অংশকে শ্রেণীবদ্ধ করতে ফোল্ডার-ভিত্তিক নেস্টেড রাউটিং ব্যবহৃত হয়। App Router-এ ফোল্ডারের নামই ইউআরএল রুটের নাম নির্ধারণ করে।
+
+নেস্টেড রাউটিং আর্কিটেকচার
+
+* /about রুটের জন্য: app/about/page.js
+* /about/mission রুটের জন্য: app/about/mission/page.js
+
+// app/about/mission/page.js
+export default function MissionPage() {
+  return (
+    <section>
+      <h2 className="text-2xl font-bold">আমাদের মিশন</h2>
+      <p className="mt-2 text-gray-600">গুণগত টেকনিক্যাল শিক্ষা সবার কাছে পৌঁছে দেওয়া আমাদের লক্ষ্য।</p>
+    </section>
+  );
+}
+
+
+লেআউট সেগমেন্ট (Segment Layouts)
+
+Root Layout-এর মতোই প্রতিটি সাব-ফোল্ডারে আলাদা layout.js তৈরি করা যায়। এগুলো Parent Layout-এর ভেতর children প্রপ হিসেবে নেস্টেড উপায়ে মাউন্ট হয়।
+
+// app/about/layout.js
+import Link from 'next/link';
+
+export default function AboutLayout({ children }) {
+  return (
+    <div className="space-y-6">
+      <div className="border-b pb-4 flex gap-4 text-sm font-semibold text-blue-600">
+        <Link href="/about" className="hover:underline">About Home</Link>
+        <Link href="/about/mission" className="hover:underline">Our Mission</Link>
+      </div>
+      
+      {/* About সেগমেন্টের পেজগুলো এখানে রেন্ডার হবে */}
+      <main>{children}</main>
+    </div>
+  );
+}
+
+
+Client-side Navigation: next/link
+
+সাধারণ <a> ট্যাগ ব্যবহারে ব্রাউজার পুরো পেজ রিফ্রেশ (Hard Reload) করে, যা স্টেট নষ্ট করে এবং সার্ভারে অতিরিক্ত রিকোয়েস্ট পাঠায়। কিন্তু next/link কম্পোনেন্ট ব্যবহারে ক্লায়েন্ট-সাইড সফট-নেভিগেশন অর্জিত হয়। এটি ভিউপোর্টে থাকা লিংকগুলোকে ব্যাকগ্রাউন্ডে প্রি-ফেচ (Prefetch) করে স্পা (SPA)-এর ন্যায় তাৎক্ষণিক রেসপন্স প্রদান করে।
+
+আর্কিটেকচার সুরক্ষিত করার পর পেজ প্রসেসিং সময়ের ইউজার এক্সপেরিয়েন্স উন্নত করতে এবং বিভিন্ন এক্সেপশন হ্যান্ডেল করতে ব্যবহৃত স্পেশাল ফাইলসমূহ পরবর্তী অধ্যায়ে আলোচনা করা হলো।
+
+৫. স্পেশাল ফাইলস: loading.js, error.js এবং not-found.js [Video Timestamp: 26:10]
+
+Next.js 14 প্রতিটি রাউট সেগমেন্টে অ্যাসিঙ্ক্রোনাস প্রসেস পরিচালনায় তিনটি বিশেষ ফাইল কনভেনশন সাপোর্ট করে।
+
+১. Loading UI (loading.js)
+
+পেজের ডেটা ফেচিং চলায় অবস্থায় স্বয়ংসক্রিয়ভাবে এটি দৃশ্যমান হয়। এটি নেটিভ React Suspense বাউন্ডারির ওপর নির্মিত।
+
+// app/about/loading.js
+export default function Loading() {
+  return (
+    <div className="flex items-center justify-center p-12">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <span className="ml-3 font-medium text-gray-600">কন্টেন্ট লোড হচ্ছে...</span>
+    </div>
+  );
+}
+
+
+২. Error Handling (error.js)
+
+কোডের কোনো এক্সেপশন বা ডেটা ফেচিং ফেলিউরে রিয়্যাক্ট এরর বাউন্ডারি হিসেবে error.js এক্সিকিউট হয়। এটি অবশ্যই একটি Client Component হতে হবে।
+
+// app/about/error.js
+'use client'; // Client Component ডিরেক্টিভ বাধ্যতামূলক
+
+import { useEffect } from 'react';
+
+export default function Error({ error, reset }) {
+  useEffect(() => {
+    // প্রোডাকশন এরর ট্র্যাকিং সার্ভিস (যেমন Sentry) এ শাট ডাউন করা
+    console.error('Captured Error Digest:', error.digest);
+    console.error('Error Detail:', error);
+  }, [error]);
+
+  return (
+    <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
+      <h2 className="text-xl font-bold text-red-700">অনাকাঙ্ক্ষিত এরর ঘটেছে!</h2>
+      <p className="text-sm text-red-600 mt-1">{error.message || 'ডেটা লোড করতে ব্যর্থ হয়েছে।'}</p>
+      {error.digest && (
+        <p className="text-xs text-gray-500 mt-2 font-mono">Error ID: {error.digest}</p>
+      )}
+      <button
+        onClick={() => reset()} // রিম্যাউন্ট এবং রিরেন্ডার ট্রাই করবে
+        className="mt-4 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded hover:bg-red-700 transition-colors"
+      >
+        Try Again (পুনরায় চেষ্টা করুন)
+      </button>
+    </div>
+  );
+}
+
+
+৩. Not Found UI (not-found.js)
+
+অনুরোধকৃত সেগমেন্ট বা রিসোর্স না পাওয়া গেলে কাস্টম ৪০৪ পেজ প্রদর্শনের জন্য ব্যবহৃত হয়।
+
+// app/not-found.js
+import Link from 'next/link';
+
+export default function NotFound() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+      <h1 className="text-6xl font-extrabold text-gray-800">404</h1>
+      <h2 className="text-2xl font-bold text-gray-600 mt-4">পেজটি পাওয়া যায়নি</h2>
+      <p className="text-gray-500 mt-2">আপনি যে রিসোর্সটি খুঁজছেন তা মুছে ফেলা হয়েছে অথবা ইউআরএলটি ভুল।</p>
+      <Link href="/" className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+        হোম পেজে ফিরে যান
+      </Link>
+    </div>
+  );
+}
+
+
+গ্লোবাল লোডিং ও এরর হ্যান্ডলিং কাঠামোর পর ডাইনামিক ইউআরএল থেকে কাস্টম ৪০৪ ট্রিগার করার নিয়ম পরবর্তী অধ্যায়ে আলোচনা করা হয়েছে।
+
+৬. ডাইনামিক রাউটিং এবং রুট-স্পেসিফিক Not Found (Dynamic Routing) [Video Timestamp: 34:15]
+
+ব্লগ আইডি বা ইউজার আইডির মতো পরিবর্তনশীল ডাটার ওপর নির্ভর করে পেজ রেন্ডার করতে Dynamic Routing ব্যবহৃত হয়।
+
+Dynamic Route তৈরি
+
+স্কয়ার ব্র্যাকেট কনভেনশন ব্যবহার করে app/blogs/[id]/page.js ফোল্ডার স্ট্রাকচার তৈরি করতে হয়। পেজ কম্পোনেন্টটি স্বয়ংসক্রিয়ভাবে params প্রপ্স রিসিভ করে।
+
+// app/blogs/[id]/page.js
+import { notFound } from 'next/navigation';
+
+export default async function BlogPage({ params }) {
+  const { id } = params;
+
+  // শর্তসাপেক্ষে কাস্টম 404 ট্রিগার করার উদাহরণ
+  // ধরে নেওয়া যাক আইডি যদি '3' হয় তবে ডাটাবেজে এই ব্লগটি নেই
+  if (id === '3') {
+    notFound(); // এটি ডিরেক্টলি সনিকটস্থ not-found.js ফাইলটি এক্সিকিউট করবে
+  }
+
+  return (
+    <main className="space-y-4">
+      <h1 className="text-3xl font-bold">ব্লগ বিবরণী</h1>
+      <p className="text-gray-700">বর্তমানে প্রদর্শিত ব্লগের আইডি: <span className="font-mono bg-gray-200 px-2 py-1 rounded">{id}</span></p>
+    </main>
+  );
+}
+
+
+ডাইনামিক পেজের কনটেন্ট সার্ভার থেকে পাওয়ার পর ব্যবহারকারীর সাথে ইন্টারঅ্যাকশনের জন্য ক্লায়েন্ট কম্পোনেন্টের প্রয়োজন হয়, যা পরবর্তী অধ্যায়ে ব্যাখ্যা করা হলো।
+
+৭. সার্ভার কম্পোনেন্ট বনাম ক্লায়েন্ট কম্পোনেন্ট (Server vs Client Components) [Video Timestamp: 42:00]
+
+Next.js 14-এর পারফরম্যান্স অপটিমাইজেশনের মূল চাবিকাঠি হলো সার্ভার এবং ক্লায়েন্ট কম্পোনেন্টের সঠিক নির্বাচন।
+
+সার্ভার কম্পোনেন্টের সীমাবদ্ধতা
+
+বাই-ডিফল্ট সমস্ত কম্পোনেন্ট Server Components হওয়ার কারণে এতে সরাসরি ব্রাউজার ইন্টারঅ্যাক্টিভিটি যুক্ত করা যায় না।
+
+* ❌ onClick, onChange, onSubmit-এর মতো ইভেন্ট লিসেনার ব্যবহার করা নিষিদ্ধ।
+* ❌ useState, useReducer, useEffect-এর মতো রিয়্যাক্ট হুক্স ব্যবহার করা নিষিদ্ধ।
+
+'use client' ডিরেক্টিভ
+
+ইন্টারঅ্যাক্টিভ কম্পোনেন্ট তৈরি করতে ফাইলের সর্বাগ্রে 'use client' ডিরেক্টিভ যুক্ত করতে হয়। এটি নেক্সটকে নির্দেশ করে যে 컴্পোনেন্টটির জাভাস্ক্রিপ্ট বান্ডেল ক্লায়েন্টে পাঠাতে হবে।
+
+// app/components/InteractiveButton.js
+'use client'; // Client Component হিসেবে ঘোষণা
+
+import { useState } from 'react';
+
+export default function InteractiveButton() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div className="flex items-center gap-4 my-4">
+      <button 
+        onClick={() => setCount(count + 1)}
+        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 active:scale-95 transition-transform"
+      >
+        ক্লিক করা হয়েছে: {count} বার
+      </button>
+    </div>
+  );
+}
+
+
+সিদ্ধান্ত গ্রহণের ফ্রেমওয়ার্ক (Server vs Client Components)
+
+কাজের ধরন / বৈশিষ্ট্য	Server Component (RSC)	Client Component ('use client')
+ডেটা ফেচিং (Direct Async/Await)	✅ সাপোর্ট করে	❌ সাপোর্ট করে না
+সরাসরি ব্যাকএন্ড কোয়েরি (DB/FS)	✅ সাপোর্ট করে	❌ তীব্র নিরাপত্তা ঝুঁকি
+Zero JavaScript Bundle Impact	✅ শতভাগ সত্য	❌ ক্লায়েন্ট বান্ডেল বৃদ্ধি পায়
+ইভেন্ট হ্যান্ডলার (onClick ইত্যাদি)	❌ সমর্থন করে না	✅ সাপোর্ট করে
+State & Lifecycle Hooks (useState)	❌ সমর্থন করে না	✅ সাপোর্ট করে
+
+কম্পোনেন্ট লেভেলে আর্কিটেকচার ডিজাইনের পাশাপাশি ভিউয়াল অ্যাসেটগুলো অপটিমাইজ করা আবশ্যক। পরবর্তী অধ্যায়ে ইমেজ এবং গুগল ফন্ট অপটিমাইজেশন নিয়ে আলোচনা করা হলো।
+
+৮. অ্যাসেট ও ফন্ট অপটিমাইজেশন (Image & Font Optimization) [Video Timestamp: 50:45]
+
+Core Web Vitals মেট্রিক্স (বিশেষ করে LCP এবং CLS) অক্ষুণ্ণ রাখতে Next.js বিশেষ অপটিমাইজড কম্পোনেন্ট সরবরাহ করে।
+
+Image Component (next/image)
+
+নেটিভ HTML <img> অপটিমাইজেশনের অভাবে ব্রাউজারের ব্যান্ডউইথ নষ্ট করে। next/image নিচের সুবিধাগুলো নেটিভলি দেয়: ১. Auto Resizing & WebP Conversion: স্ক্রিন রেজোলিউশন অনুযায়ী সঠিক সাইজের আধুনিক WebP ফরম্যাট সার্ভ করে (কোয়ালিটি ডিফল্ট ৭৫%)। ২. Prevent Cumulative Layout Shift (CLS): স্থান নিশ্চিত করে পেজ লাফালাফি বন্ধ করে। ৩. Lazy Loading: ভিউপোর্টে না আসা পর্যন্ত ইমেজ ডাউনলোড স্থগিত রাখে।
+
+লোকাল বনাম রিমোট ইমেজ ও blurDataURL
+
+এক্সটার্নাল/রিমোট ইমেজের ক্ষেত্রে নিরাপত্তা ও অপটিমাইজেশনের জন্য next.config.js-এ ডোমেন হোয়াইটলিস্ট করা বাধ্যতামূলক।
+
+// next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'jsonplaceholder.typicode.com',
+      },
+    ],
+  },
+};
+
+module.exports = nextConfig;
+
+
+// app/gallery/page.js
+import Image from 'next/image';
+import localImg from '@/public/hero.jpg';
+
+export default function GalleryPage() {
+  // রিমোট ইমেজের জন্য Base64 ব্লার হ্যাশ
+  const remoteBlurData = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+  return (
+    <div className="space-y-6">
+      {/* লোকাল ইমেজ - Next.js স্বয়ংক্রিয়ভাবে ব্লার প্রসেস করবে */}
+      <Image
+        src={localImg}
+        alt="Local Hero Image"
+        placeholder="blur"
+        className="rounded-lg"
+      />
+
+      {/* রিমোট ইমেজ - width, height এবং blurDataURL বাধ্যতামূলক */}
+      <Image
+        src="https://jsonplaceholder.typicode.com/images/1.jpg"
+        alt="Remote External Image"
+        width={600}
+        height={400}
+        placeholder="blur"
+        blurDataURL={remoteBlurData}
+        className="rounded-lg"
+      />
+    </div>
+  );
+}
+
+
+Font Optimization (next/font/google)
+
+গুগল ফন্ট লোড হওয়ার সময় টেক্সট ফ্লিকারিং বা লাফালাফি রোধে নেক্সট বিল্ড টাইমে ফন্ট ডাউনলোড করে ইন্টারনাল অ্যাসেট হিসেবে হোস্ট করে।
+
+// app/layout.js
+import { Poppins } from 'next/font/google';
+
+// Poppins ফন্ট কনফিগারেশন
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '600', '700'],
+  variable: '--font-poppins', // কাস্টম CSS ভ্যারিয়েবল
+});
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="bn" className={poppins.variable}>
+      <body className={poppins.className}>
+        {children}
+      </body>
+    </html>
+  );
+}
+
+
+পারফরম্যান্স এবং ভিউ অপটিমাইজেশনের পর সার্চ ইঞ্জিনে পেজের ভিজিবিলিটি বাড়াতে মেটাডেটা প্রসেসিং পদ্ধতি পরবর্তী অধ্যায়ে আলোচনা করা হয়েছে।
+
+৯. মেটাডেটা ও এসইও অপটিমাইজেশন (Static & Dynamic Metadata) [Video Timestamp: 58:30]
+
+Next.js 14-এ Metadata API ব্যবহার করে খুব সহজেই হেড মার্কআপ (<title>, <meta>, OpenGraph) পরিচালনা করা যায়।
+
+স্ট্যাটিক মেটাডেটা (Static Metadata)
+
+// app/about/page.js
+export const metadata = {
+  title: 'About Us | LWS Next.js 14 App',
+  description: 'আমাদের প্রতিষ্ঠান এবং টেকনিক্যাল ভিশন সম্পর্কে জানুন।',
+  openGraph: {
+    title: 'About Us | LWS Next.js 14',
+    description: 'লার্ন উইথ সুমিত টেকনিক্যাল গাইডলাইন।',
+  },
+};
+
+export default function AboutPage() {
+  return <h1 className="text-2xl font-bold">About Page</h1>;
+}
+
+
+ডায়নামিক মেটাডেটা (Dynamic Metadata)
+
+ডায়নামিক পেজের কনটেন্টের ওপর ভিত্তি করে মেটাডেটা জেনারেট করতে generateMetadata অ্যাসিনক্রোনাস ফাংশন ব্যবহৃত হয়।
+
+// app/blogs/[id]/page.js
+
+export async function generateMetadata({ params }) {
+  const { id } = params;
+  
+  // ডেটা ফেচিং
+  const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`);
+  const post = await res.json();
+
+  return {
+    title: `${post.title} | Technical Blog`,
+    description: post.body.slice(0, 100),
+  };
+}
+
+export default function BlogPost({ params }) {
+  return <article>...</article>;
+}
+
+
+মেটাডেটা জেনারেশন এবং পেজ রেন্ডারিং উভয় ক্ষেত্রে একই API কল করলে সার্ভারে রিকোয়েস্ট ডুপ্লিকেশন হয় কিনা, তা পরবর্তী অধ্যায়ে ব্যাখ্যা করা হলো।
+
+১০. সার্ভার কম্পোনেন্টে ডেটা ফেচিং (Data Fetching in Server Components) [Video Timestamp: 1:06:15]
+
+Next.js 14-এ useEffect বা থার্ড-পার্টি স্টেট লাইব্রেরি (যেমন Axios, React Query) ছাড়াই সরাসরি RSC-তে async/await ব্যবহার করে ডেটা ফেচিং সম্পাদন করা যায়।
+
+Direct Async/Await Data Fetching & Request Deduplication
+
+Next.js নেটিভ fetch API-কে অগমেন্টেড করেছে। ফলে একই রিকোয়েস্ট পেজের একাধিক জায়গায় (যেমন generateMetadata এবং পেজ কম্পোনেন্টে) করা হলে এটি সার্ভারে মেমোরি থেকে Automatic Request Deduplication করে। ব্রাউজার বা ব্যাকএন্ডে রিকোয়েস্টটি মাত্র একবারই এক্সিকিউট হয়।
+
+// app/posts/[id]/page.js
+
+// একক ফেচ হেলপার ফাংশন
+async function getPost(id) {
+  console.log(`Fetch Triggered for Post ID: ${id}`); // এটি টার্মিনালে মাত্র একবারই প্রিন্ট হবে
+  const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`);
+  if (!res.ok) throw new Error('Failed to fetch post');
+  return res.json();
+}
+
+// ১. ডায়নামিক মেটাডেটা ফাংশন
+export async function generateMetadata({ params }) {
+  const post = await getPost(params.id); // প্রথম কল
+  return {
+    title: post.title,
+  };
+}
+
+// ২. প্রধান পেজ কম্পোনেন্ট
+export default async function SinglePostPage({ params }) {
+  const post = await getPost(params.id); // দ্বিতীয় কল - এটি Deduplicated হবে (Duplicate HTTP Call হবে না)
+
+  return (
+    <main className="p-6">
+      <h1 className="text-2xl font-bold">{post.title}</h1>
+      <p className="mt-4 text-gray-700">{post.body}</p>
+    </main>
+  );
+}
+
+
+একটি রিকোয়েস্টের পর আরেকটি না চালিয়ে সমান্তরালভাবে একাধিক ফেচ চালানোর উন্নত স্ট্র্যাটেজি পরবর্তী অধ্যায়ে তুলে ধরা হলো।
+
+১১. প্যারাল্যাল ডেটা ফেচিং এবং স্ট্রিমড ইউআই (Parallel Data Fetching & Streaming with Suspense) [Video Timestamp: 1:14:40]
+
+ওয়াটারফল নেটওয়ার্ক রিকোয়েস্ট (Waterfall Request) পরিহার করতে সমান্তরাল ফেচিং ও React Suspense স্ট্রিমিং ব্যবহার করা হয়।
+
+Parallel Fetching (Promise.all)
+
+যদি দুটি স্বতন্ত্র ফেচিং প্রসেস একে অপরের ওপর নির্ভরশীল না হয়, তবে তাদের সমান্তরালে এক্সিকিউট করা বাঞ্ছনীয়।
+
+// app/dashboard/page.js
+
+async function getUser() {
+  const res = await fetch('https://jsonplaceholder.typicode.com/users/1');
+  return res.json();
+}
+
+async function getPosts() {
+  const res = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=5');
+  return res.json();
+}
+
+export default async function DashboardPage() {
+  // সমান্তরালে ফেচিং শুরু করা হলো
+  const userPromise = getUser();
+  const postsPromise = getPosts();
+
+  // উভয় প্রমিজ একই সাথে সমাধান (Resolve) হবে
+  const [user, posts] = await Promise.all([userPromise, postsPromise]);
+
+  return (
+    <main className="space-y-4">
+      <h1 className="text-xl font-bold">Welcome, {user.name}</h1>
+      {/* পোস্ট তালিকা */}
+    </main>
+  );
+}
+
+
+React Suspense দিয়ে UI Streaming (Non-blocking Architecture)
+
+ধীরগতির কোনো রিকোয়েস্টের (যেমন কমেন্ট সেকশন) কারণে যদি পুরো পেজের রেন্ডারিং আটকে রাখতে না চাই, তবে প্রধান কন্টেন্ট দ্রুত দেখিয়ে ধীরগতির কন্টেন্টকে <Suspense> দিয়ে স্ট্রিম করা যায়।
+
+// app/posts/[id]/page.js
+import { Suspense } from 'react';
+
+async function getPost(id) {
+  const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`);
+  return res.json();
+}
+
+async function getComments(id) {
+  // কমেন্টসের জন্য কৃত্রিম বিলম্ব (ধীরগতির API)
+  const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}/comments`);
+  return res.json();
+}
+
+// কমেন্টসের জন্য পৃথক কম্পোনেন্ট যা নিজেই নিজের প্রমিজ রিজলভ করবে
+async function CommentsSection({ commentsPromise }) {
+  const comments = await commentsPromise;
+  return (
+    <ul className="space-y-2">
+      {comments.map((comment) => (
+        <li key={comment.id} className="p-3 bg-gray-50 rounded text-sm">
+          <strong>{comment.name}:</strong> {comment.body}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export default async function SinglePostPage({ params }) {
+  const { id } = params;
+  
+  // ফেচ প্রমিজগুলো শুরু করা হলো
+  const postPromise = getPost(id);
+  const commentsPromise = getComments(id);
+
+  // শুধুমাত্র মূল পোস্টের জন্য await করা হলো (Non-blocking Fast Render)
+  const post = await postPromise;
+
+  return (
+    <main className="p-6 space-y-6">
+      <article>
+        <h1 className="text-3xl font-bold">{post.title}</h1>
+        <p className="mt-2 text-gray-700">{post.body}</p>
+      </article>
+
+      <hr />
+
+      {/* কমেন্টস ফেচিং চলতে থাকলেও মূল পেজ ইউজার তৎক্ষণাৎ দেখবে */}
+      <section>
+        <h3 className="text-xl font-bold mb-4">মন্তব্যসমূহ</h3>
+        <Suspense fallback={<div className="p-4 bg-yellow-50 text-yellow-700 rounded">কমেন্টস স্ট্রিম ও লোড হচ্ছে...</div>}>
+          <CommentsSection commentsPromise={commentsPromise} />
+        </Suspense>
+      </section>
+    </main>
+  );
+}
+
+
+ডেটা ফেচিং ও স্ট্রিমিং আয়ত্ত করার পর প্রোডাকশন বিল্ডের সময় ক্যাশিং এবং স্ট্যাটিক সাইট জেনারেশন কৌশল পরবর্তী অধ্যায়ে বিশ্লেষণ করা হলো।
+
+১২. ক্যাশিং স্ট্র্যাটেজি এবং স্ট্যাটিক সাইট জেনারেটর (Caching & SSG with generateStaticParams) [Video Timestamp: 1:23:10]
+
+Next.js 14-এর বিল্ট-ইন ক্যাশিং আর্কিটেকচার প্রোডাকশনে সর্বনিম্ন রেসপন্স টাইম ও সর্বোচ্চ থ্রুপুট নিশ্চিত করে।
+
+Caching Strategies (fetch Options)
+
+১. force-cache (Default): নেক্সট স্বয়ংসক্রিয়ভাবে ডাটা বিল্ড টাইমে ক্যাশ করে এবং স্ট্যাটিকালি সার্ভ করে। ২. no-store: অন-ডিমান্ড সার্ভার রেন্ডারিং নিশ্চিত করতে ক্যাশিং সম্পূর্ণ বন্ধ রাখে। ৩. Revalidation (ISR): নির্দিষ্ট সময় পর পর ডাটা ক্যাশ আপডেট করার নিয়ম।
+
+// ১. রিয়েল-টাইম ডায়নামিক ডেটা (ক্যাশ হবে না)
+fetch('https://api.com/data', { cache: 'no-store' });
+
+// ২. Time-based Revalidation (ISR: প্রতি ৬০ সেকেন্ডে রি-ভ্যালিডেট হবে)
+fetch('https://api.com/data', { next: { revalidate: 60 } });
+
+
+Dynamic Route-এ SSG: generateStaticParams
+
+ডায়নামিক পেজগুলোকে (যেমন /blogs/[id]) বিল্ড টাইমে (Build Time) স্ট্যাটিক এইচটিটিপি ফাইল হিসেবে জেনারেট করে রাখতে generateStaticParams ফাংশন ব্যবহার করা হয়।
+
+// app/blogs/[id]/page.js
+
+// বিল্ড টাইমে কোন কোন আইডি-র জন্য পেজ স্ট্যাটিকালি রেন্ডার হবে তা নিশ্চিত করা
+export async function generateStaticParams() {
+  const res = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=5');
+  const posts = await res.json();
+
+  return posts.map((post) => ({
+    id: post.id.toString(), // রিটার্ন অবজেক্টের মান অবশ্যই স্ট্রিং হতে হবে
+  }));
+}
+
+export default async function BlogDetails({ params }) {
+  const { id } = params;
+  const res = await fetch(`https://jsonplaceholder.typicode.com/posts/${id}`);
+  const post = await res.json();
+
+  return (
+    <article className="p-6">
+      <h1 className="text-2xl font-bold">{post.title}</h1>
+      <p className="mt-4 text-gray-600">{post.body}</p>
+    </article>
+  );
+}
+
+
+Build Output মূল্যায়ন (npm run build)
+
+প্রজেক্ট অপটিমাইজেশন শেষে টার্মিনালে npm run build এক্সিকিউট করলে নেক্সট একটি সামারি টার্মিনাল রিপোর্ট প্রদর্শন করে:
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    142 B          84.2 kB
+├ ○ /about                               138 B          84.1 kB
+├ Dynamic /blogs/[id]
+│   ├ ● /blogs/1                         150 B          84.3 kB
+│   ├ ● /blogs/2                         150 B          84.3 kB
+│   └ ● /blogs/3                         150 B          84.3 kB
+└ ƒ /dashboard                           160 B          84.4 kB
++ First Load JS shared by all            84.1 kB
+  ├ chunks/framework-4f880.js
+  └ chunks/main-app-3a119.js
+
+   Symbol Breakdown:
+   ○  (Static)   - Pre-rendered as static content (Zero Server Compute Impact)
+   Wait (SSG)    - Automatically generated as static HTML at build time via generateStaticParams
+   ƒ  (Dynamic)  - Rendered on-demand at request time (Server Heavy Compute)
+
+
+আর্কিটেকচারাল ব্যাখ্যা:
+
+* ○ (Static): যে পেজগুলোতে কোনো ডায়নামিক ডেটা বা হেডার নেই। এগুলো আল্ট্রা-ফাস্ট CDN থেকে সার্ভ হয়।
+* ● (SSG / Dynamic StaticParams): generateStaticParams দিয়ে বিল্ড টাইমে তৈরি প্রিপেয়ার্ড এইচটিটিপি ফাইল। এগুলো সর্বনিম্ন মেমোরি খরচ করে সার্ভারলেস প্রান্তিক ফাস্ট রেসপন্স দেয়।
+* ƒ (Dynamic): যেসব পেজে no-store, headers(), বা cookies() ব্যবহার করা হয়েছে। এগুলো অন-ডিমান্ড সার্ভারে কম্পিউট হয়ে রেসপন্স করে।
+
+সমাপ্তি
+
+এই পূর্ণাঙ্গ গাইডলাইনের মাধ্যমে আমরা Next.js 14-এর CSR বনাম SSR-এর আর্কিটেকচারাল তুলনা, রিয়্যাক্ট সার্ভার কম্পোনেন্টস (RSC), App Router ফোল্ডার আর্কিটেকচার, নেস্টেড ও ডায়নামিক রাউটিং, স্পেশাল ফাইল কনভেনশন, ক্লায়েন্ট বনাম সার্ভার কম্পোনেন্ট সিদ্ধান্ত কাঠামোর গভীর বিশ্লেষণ, ইমেজ ও গুগল ফন্ট অপটিমাইজেশন, ডায়নামিক মেটাডেটা প্রসেসিং, ডেটা ফেচিং ডিডুপ্লিকেশন, সমান্তরাল ফেচিং ও Suspense স্ট্রিমিং এবং সিডিএন ক্যাশিং ও SSG স্ট্র্যাটেজি সম্পূর্ণরূপে কভার করেছি। এর মাধ্যমে Next.js 14 ক্র্যাশ কোর্সের আর্কিটেকচারাল ও টেকনিক্যাল গাইডটি সফলভাবে সমাপ্ত হলো।

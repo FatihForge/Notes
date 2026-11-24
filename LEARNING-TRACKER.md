@@ -98,9 +98,30 @@
 
 ---
 
+## 7. ⚡ Next.js Full-Stack App Router Track
+
+| লেসন | বিষয় / টপিক (Topic) | নোটস লিংক (Notes Link) | ডকুমেন্টেশন স্ট্যাটাস | লার্নিং স্ট্যাটাস |
+|:---:|---|:---:|:---:|:---:|
+| 01 | **Next.js পরিচিতি ও কেন ব্যবহার করব** | [01-intro-and-why-nextjs](./Next.js/01-intro-and-why-nextjs/) | 📘 Notes Prepared | 🟡 In Progress |
+| 02 | **রেন্ডারিং স্ট্র্যাটেজি (CSR vs SSR vs RSC)** | [02-rendering-strategies-csr-ssr-rsc](./Next.js/02-rendering-strategies-csr-ssr-rsc/) | 📘 Notes Prepared | 🟡 In Progress |
+| 03 | **ইনস্টলেশন ও ফোল্ডার স্ট্রাকচার** | [03-installation-and-folder-structure](./Next.js/03-installation-and-folder-structure/) | 📘 Notes Prepared | 🟡 In Progress |
+| 04 | **পেজ, লেআউট ও ফাইল-বেসড রাউটিং** | [04-pages-layouts-and-routing](./Next.js/04-pages-layouts-and-routing/) | 📘 Notes Prepared | 🟡 In Progress |
+| 05 | **লোডিং স্টেট ও রিঅ্যাক্ট সাসপেন্স** | [05-loading-state-suspense](./Next.js/05-loading-state-suspense/) | 📘 Notes Prepared | 🟡 In Progress |
+| 06 | **এরর হ্যান্ডলিং ও এরর বাউন্ডারি** | [06-error-handling](./Next.js/06-error-handling/) | 📘 Notes Prepared | 🟡 In Progress |
+| 07 | **ডাইনামিক রাউটিং ও 404 পেজ** | [07-dynamic-routing-and-not-found](./Next.js/07-dynamic-routing-and-not-found/) | 📘 Notes Prepared | 🟡 In Progress |
+| 08 | **সার্ভার বনাম ক্লায়েন্ট কম্পোনেন্টস** | [08-server-vs-client-components](./Next.js/08-server-vs-client-components/) | 📘 Notes Prepared | 🟡 In Progress |
+| 09 | **ইমেজ ও ফন্ট অপটিমাইজেশন** | [09-image-and-font-optimization](./Next.js/09-image-and-font-optimization/) | 📘 Notes Prepared | 🟡 In Progress |
+| 10 | **স্ট্যাটিক ও ডাইনামিক মেটাডেটা (SEO)** | [10-static-and-dynamic-metadata](./Next.js/10-static-and-dynamic-metadata/) | 📘 Notes Prepared | 🟡 In Progress |
+| 11 | **ডেটা ফেচিং ও অটোমেটিক ডিডুপ্লিকেশন** | [11-data-fetching-and-deduplication](./Next.js/11-data-fetching-and-deduplication/) | 📘 Notes Prepared | 🟡 In Progress |
+| 12 | **প্রোগ্রেসিভ রেন্ডারিং ও স্ট্রিমিং** | [12-progressive-rendering-streaming](./Next.js/12-progressive-rendering-streaming/) | 📘 Notes Prepared | 🟡 In Progress |
+| 13 | **SSR, SSG, ISR ও ক্যাশিং কৌশল** | [13-ssr-ssg-isr-caching](./Next.js/13-ssr-ssg-isr-caching/) | 📘 Notes Prepared | 🟡 In Progress |
+| 14 | **রিসোর্স সামারি, চিটশিট ও বেস্ট প্র্যাকটিস** | [14-summary-and-best-practices](./Next.js/14-summary-and-best-practices/) | 📘 Notes Prepared | 🟡 In Progress |
+
+---
+
 ## 📈 সামগ্রিক পরিসংখ্যান (Overall Dashboard Summary)
 
-- **মোট ট্র্যাক সংখ্যা:** ৬টি (JavaScript, TypeScript, Node.js, Express.js, MongoDB, React)
-- **মোট প্রস্তুতকৃত লেসন নোটস (Notes Prepared):** ৩৬টি (JS: ১২, TS: ১, Node: ৮, Express: ১১, MongoDB: ৩, React: ১)
+- **মোট ট্র্যাক সংখ্যা:** ৭টি (JavaScript, TypeScript, Node.js, Express.js, MongoDB, React, Next.js)
+- **মোট প্রস্তুতকৃত লেসন নোটস (Notes Prepared):** ৫০টি (JS: ১২, TS: ১, Node: ৮, Express: ১১, MongoDB: ৩, React: ১, Next.js: ১৪)
 - **মোট সম্পন্ন (Completed):** ৩৪টি টপিক
-- **শেখা চলমান (In Progress):** ২টি ট্র্যাক (TypeScript, React)
+- **শেখা চলমান (In Progress):** ৩টি ট্র্যাক (TypeScript, React, Next.js)

@@ -23,6 +23,7 @@
 | **Express.js** | ফ্লেক্সিবল ওয়েব ফ্রেমওয়ার্ক, মিডলওয়্যার, MVC, Routing, Auth ও Uploads | [`/Express.js`](./Express.js/) | ১১টি লেসন | 🟢 Completed |
 | **MongoDB** | NoSQL ডেটাবেস, BSON, Compass, Atlas কানেকশন ও Mongoose ODM | [`/MongoDB`](./MongoDB/) | ৩টি লেসন | 🟢 Completed |
 | **React** | ডিক্লেয়ারেটিভ UI, JSX, Props, Events ও useState Hook আর্কিটেকচার | [`/React`](./React/) | ১টি লেসন (প্রস্তুত) | 🟡 In Progress |
+| **Next.js** | ফুল-স্ট্যাক ফ্রেমওয়ার্ক, App Router, RSC, SSR/SSG/ISR, Data Fetching ও SEO | [`/Next.js`](./Next.js/) | ১৪টি লেসন (প্রস্তুত) | 🟡 In Progress |
 
 > 📊 **আমার সম্পূর্ণ শেখার অগ্রগতি ও রিভিশন ট্র্যাকার দেখতে দেখুন: [LEARNING-TRACKER.md](./LEARNING-TRACKER.md)**
 
@@ -87,9 +88,26 @@ Notes/
 │   ├── 02-mongodb-fundamentals-crud/
 │   └── 03-mongoose-odm/
 │
-└── React/                                   # React Frontend Engineering
+├── React/                                   # React Frontend Engineering
+│   ├── README.md
+│   └── 01-react-fundamentals/               # JSX, Props, Events ও useState
+│
+└── Next.js/                                 # Next.js 14 Full-Stack App Router (১৪টি লেসন)
     ├── README.md
-    └── 01-react-fundamentals/               # JSX, Props, Events ও useState
+    ├── 01-intro-and-why-nextjs/
+    ├── 02-rendering-strategies-csr-ssr-rsc/
+    ├── 03-installation-and-folder-structure/
+    ├── 04-pages-layouts-and-routing/
+    ├── 05-loading-state-suspense/
+    ├── 06-error-handling/
+    ├── 07-dynamic-routing-and-not-found/
+    ├── 08-server-vs-client-components/
+    ├── 09-image-and-font-optimization/
+    ├── 10-static-and-dynamic-metadata/
+    ├── 11-data-fetching-and-deduplication/
+    ├── 12-progressive-rendering-streaming/
+    ├── 13-ssr-ssg-isr-caching/
+    └── 14-summary-and-best-practices/
 ```
 
 ---
