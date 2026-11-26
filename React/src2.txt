@@ -1,0 +1,538 @@
+React JS-এর মৌলিক ভিত্তি: JSX, এলিমেন্ট রেন্ডারিং, কম্পোনেন্ট, প্রপস এবং স্টেট ও লাইফসাইকেল
+
+1. Lesson 5: React JSX Element এবং Rendering Elements-এর মূল মেকানিজম
+
+একটি আধুনিক, হাই-পারফর্ম্যান্ট ও স্কেলেবল ওয়েব অ্যাপ্লিকেশন তৈরির ক্ষেত্রে রিয়্যাক্ট (React)-এর অভ্যন্তরীণ কার্যপ্রণালী গভীরভাবে বোঝা অত্যন্ত জরুরি। রিয়্যাক্ট অ্যাপ্লিকেশনের সবচেয়ে ক্ষুদ্রতম এবং মৌলিক বিল্ডিং ব্লক (Building Block) হলো React Element। রিয়্যাক্ট কীভাবে এই এলিমেন্টগুলো তৈরি করে, JSX-এর মাধ্যমে তা কীভাবে সিনট্যাক্টিক্যালি সহজতর হয় এবং পরবর্তীতে রিয়্যাক্টের রেন্ডারিং ইঞ্জিন, ভার্চুয়াল ডম (Virtual DOM) ও ডিফিং অ্যালগরিদম (Diffing Algorithm) কীভাবে সেগুলোকে ব্রাউজার ডমে দক্ষতার সাথে রূপান্তর করে—তা বোঝা রিয়্যাক্ট আর্কিটেকচারের প্রধান ভিত্তি।
+
+1.1 DOM Element বনাম React Element এবং React.createElement-এর মেকানিজম
+
+সাধারণ ওয়েব ডেভেলপমেন্টে ব্রাউজারের ডম (DOM) নোড তৈরি করতে নেটিভ HTML DOM API ব্যবহার করা হয়। উদাহরণস্বরূপ, জাভাস্ক্রিপ্ট দিয়ে একটি HTML Element তৈরি করতে আমরা নিচের মতো কোড লিখি:
+
+// ব্রাউজারের নেটিভ DOM Element তৈরি
+const element = document.createElement('h1');
+element.innerText = 'Hello World';
+
+
+মেমোরি আর্কিটেকচারের দিক থেকে এই নেটিভ DOM নোডটি অত্যন্ত ভারী (Heavyweight)। একটি সাধারণ document.createElement('h1') ব্রাউজারের মেমোরিতে তৈরি হওয়ার পর তার সাথে শত শত ইন-বিল্ট প্রপার্টি, মেথড, ইভেন্ট লিসেনার (EventListener), স্টাইল অবজেক্ট এবং লেআউট মেট্রিক্স যুক্ত হয়।
+
+অন্যদিকে, রিয়্যাক্ট এলিমেন্ট (React Element) ব্রাউজারের কোনো সরাসরি ভারী ডম নোড নয়; এটি ব্রাউজার DOM-এর একটি অত্যন্ত হালকা (Lightweight, Cheap Plain JavaScript Object) এবং JSON-লাইক অবজেক্ট রিপ্রেজেন্টেশন। রিয়্যাক্ট কোর লাইব্রেরি React.createElement মেথডের মাধ্যমে এই অবজেক্টটি মেমোরিতে তৈরি করে:
+
+// React Element তৈরি
+const element = React.createElement(
+  'h1',
+  { className: 'heading' },
+  'Hello World'
+);
+
+
+React.createElement-এর অভ্যন্তরীণ মেকানিজম:
+
+React.createElement(type, props, ...children) মেথডটি মূলত তিনটি প্রধান আর্গুমেন্ট গ্রহণ করে:
+
+1. type: এলিমেন্টের ধরন। এটি কোনো স্ট্রিং হতে পারে (যেমন: 'h1', 'div', 'span') অথবা কোনো রিয়্যাক্ট কম্পোনেন্টের রেফারেন্স।
+2. props: এলিমেন্টের সাথে যুক্ত HTML attributes বা কাস্টম প্রপার্টির একটি প্লেন অবজেক্ট (যেমন: { className: 'heading' })।
+3. ...children: উক্ত এলিমেন্টের ভেতরে থাকা কনটেন্ট, অন্যান্য রিয়্যাক্ট এলিমেন্ট বা টেক্সট নোড।
+
+মেথডটি চালিত হওয়ার পর মেমোরিতে একটি প্লেইন জাভাস্ক্রিপ্ট অবজেক্ট রিটার্ন করে, যার অভ্যন্তরীণ রূপটি নিম্নরূপ:
+
+// React Element-এর অভ্যন্তরীণ অবজেক্ট স্ট্রাকচার (Simplified)
+{
+  type: 'h1',
+  props: {
+    className: 'heading',
+    children: 'Hello World'
+  },
+  key: null,
+  ref: null,
+  $$typeof: Symbol.for('react.element') // নিরাপত্তার জন্য ব্যবহৃত বিশেষ প্রতীক
+}
+
+
+যেহেতু রিয়্যাক্ট এলিমেন্টগুলো লেআউট ক্যালকুলেশন বা ব্রাউজারের ভারী এপিআই বহন করে না, তাই হাজার হাজার রিয়্যাক্ট এলিমেন্ট অবজেক্ট ইনস্ট্যান্টলি তৈরি ও ডেস্ট্রয় করা মেমোরি এবং প্রসেসিংয়ের দিক থেকে অত্যন্ত দ্রুত ও সাশ্রয়ী।
+
+1.2 JSX (JavaScript XML)-এর পরিচয় এবং Babel-এর ট্রান্সপাইলেশন ভূমিকা
+
+সরাসরি React.createElement ব্যবহার করে জটিল ও বহুস্তরবিশিষ্ট (Nested) UI স্ট্রাকচার তৈরি করা অত্যন্ত পঠন-অযোগ্য (Hard to read) এবং সময়সাপেক্ষ। এই সমস্যার নিখুঁত সমাধান হিসেবে রিয়্যাক্ট চালু করেছে JSX (JavaScript XML)।
+
+JSX ডেভেলপারদের জাভাস্ক্রিপ্ট কোডের ভেতরেই এইচটিএমএলের মতো সহজ সিনট্যাক্সে ইউজার ইন্টারফেস লেখার সুবিধা প্রদান করে:
+
+// JSX সিনট্যাক্স
+const element = <h1 className="heading">Hello World</h1>;
+
+
+Syntactic Sugar এবং Babel-এর ভূমিকা:
+
+JSX রিয়্যাক্ট বা জাভাস্ক্রিপ্টের কোনো স্বাধীন প্রোগ্রামিং ভাষা নয় এবং ব্রাউজার ইঞ্জিন সরাসরি JSX বুঝতে বা এক্সিকিউট করতে পারে না। JSX হলো মূলত একটি Syntactic Sugar।
+
+ব্রাউজারে কোড এক্সিকিউট হওয়ার পূর্বে Babel ট্রান্সপাইলার এই JSX-কে বিশ্লেষণ (Parse) করে ব্যাকএন্ডে অবিকল React.createElement-এ পরিণত করে:
+
+[ JSX Code ]  ---> (Babel Transpilation) --->  [ React.createElement() ]  --->  [ Plain JS Object ]
+
+
+Babel কীভাবে Lowercase বনাম Capitalized Tag চিহ্নিত করে?
+
+Babel কম্পাইলার কীভাবে বোঝে যে কখন কোন ট্যাগের জন্য স্ট্রিং পাস করতে হবে আর কখন কম্পোনেন্ট আইডেন্টিফায়ার পাস করতে হবে? এর উত্তর লুকিয়ে রয়েছে ট্যাগের ক্যাপিটালাইজেশনের ওপর:
+
+1. Lowercase HTML Tag (<clock />): Babel যখন ছোট হাতের অক্ষরের ট্যাগ দেখে, তখন সে এটিকে স্ট্যান্ডার্ড HTML ট্যাগ হিসেবে বিবেচনা করে এবং প্রপার্টি হিসেবে একটি String Literal পাস করে:
+
+// JSX:
+const el = <clock className="timer" />;
+
+// Babel Transpiled Output:
+const el = React.createElement('clock', { className: 'timer' });
+
+
+এখানে 'clock' একটি স্ট্রিং হওয়ায় রিয়্যাক্ট ধরে নেয় এটি একটি বিল্ট-ইন ব্রাউজার ডম নোড।
+
+1. Capitalized Custom Tag (<Clock />): Babel যখন বড় হাতের অক্ষরের ট্যাগ দেখে, তখন সেটিকে একটি কাস্টম রিয়্যাক্ট কম্পোনেন্ট হিসেবে চিহ্নিত করে এবং কোনো স্ট্রিং না পাঠিয়ে সরাসরি স্কোপে থাকা ফাংশন বা ক্লাসের Identifier (Reference) পাস করে:
+
+// JSX:
+const el = <Clock className="timer" />;
+
+// Babel Transpiled Output:
+const el = React.createElement(Clock, { className: 'timer' });
+
+
+এখানে Clock কোনো স্ট্রিং নয়, বরং একটি ফাংশন বা ক্লাস ভেরিয়েবলের সরাসরি রেফারেন্স। এই সূক্ষ্ম পার্থক্যের কারণেই রিয়্যাক্ট কাস্টম কম্পোনেন্ট লেখার সময় ক্যাপিটাল লেটার ব্যবহার করা বাধ্যতামূলক।
+
+1.3 JSX-এ JavaScript Expression ব্যবহার এবং Attribute নিয়মনীতি
+
+JSX-এর অন্যতম শক্তিশালী দিক হলো এটি এইচটিএমএল মার্কআপের ভেতরেই ফুল-পাওয়ার জাভাস্ক্রিপ্ট এক্সপ্রেশন যুক্ত করার সুযোগ দেয়।
+
+JavaScript Expression Interpolation:
+
+JSX-এর ভেতর কোঁকড়া বন্ধনী বা কার্লি ব্র্যাকেট {} ব্যবহার করে যেকোনো বৈধ জাভাস্ক্রিপ্ট এক্সপ্রেশন (যেমন: ভেরিয়েবল, গাণিতিক হিসাব, ফাংশন এক্সিকিউশন ইত্যাদি) ইন্টারপোলেট করা যায়:
+
+const name = 'Sumit';
+const element = <h1>Hello, {name}</h1>; // ভেরিয়েবল ইন্টারপোলেশন
+
+function formatUser(user) {
+  return `${user.firstName} ${user.lastName}`;
+}
+const user = { firstName: 'John', lastName: 'Doe' };
+const userElement = <h1>Welcome, {formatUser(user)}!</h1>; // ফাংশন এক্সিকিউশন
+
+
+JSX Attribute নিয়মনীতি:
+
+যেহেতু JSX মূলত জাভাস্ক্রিপ্টেরই একটি রূপান্তর, তাই এইচটিএমএল অ্যাট্রিবিউট লেখার ক্ষেত্রে এতে ব্রাউজারের ডম প্রপার্টি কনভেনশন মেনে চলতে হয়:
+
+1. camelCase কনভেনশন: JSX-এ সমস্ত অ্যাট্রিবিউটের নাম camelCase ফর্ম্যাটে লিখতে হয় (যেমন: tabIndex, onClick, readOnly, strokeWidth)।
+2. className এর ব্যবহার: HTML-এ উপাদান চিহ্নিত করতে class ব্যবহার করা হলেও, জাভাস্ক্রিপ্টে class একটি সংরক্ষিত শব্দ (Reserved Keyword)। ফলে ডম অবজেক্ট প্রপার্টি অনুসরণ করে JSX-এ className ব্যবহার করতে হয়।
+3. String বনাম Expression: স্ট্যাটিক টেক্সট অ্যাসাইন করার জন্য কোটেশন ("...") এবং যেকোনো ডাইনামিক ভ্যালু বা এক্সপ্রেশন পাসের জন্য কার্লি ব্র্যাকেট ({...}) ব্যবহার বাধ্যতামূলক।
+
+XSS (Cross-Site Scripting) প্রতিরোধ ও Automatic Escaping:
+
+ওয়েব নিরাপত্তায় রিয়্যাক্ট বাই-ডিফল্ট Automatic Escaping নিশ্চিত করে। JSX-এ কোনো ইনপুট, API ডেটা বা ভেরিয়েবল ইন্টারপোলেট করা হলে রিয়্যাক্ট সেটিকে রেন্ডার করার পূর্বে স্বাচ্ছন্দ্যে স্ট্রিংয়ে কনভার্ট (Escape) করে ফেলে।
+
+যদি কোনো অ্যাটাকার বা দূষিত ব্যবহারকারী ইনপুটের মাধ্যমে কোনো স্ক্রিপ্ট ইনজেক্ট করে:
+
+const userInput = '<script>alert("Hacked!")</script>';
+const element = <div>{userInput}</div>;
+
+
+রিয়্যাক্ট এই পুরো ইনপুটটিকে প্লেইন টেক্সট হিসেবে এস্কেপ করবে এবং ব্রাউজারে রেন্ডার করবে। এটি কোনোভাবেই এক্সিকিউটেবল কোড হিসেবে রান করবে না। এটি রিয়্যাক্ট অ্যাপ্লিকেশনকে XSS Attack থেকে শতভাগ সুরক্ষা প্রদান করে।
+
+1.4 React Element-এর Immutability এবং Virtual DOM-এর দক্ষ রেন্ডারিং ব্যবস্থা
+
+React Element-এর Immutability (পরিবর্তনহীনতা):
+
+রিয়্যাক্ট আর্কিটেকচারের একটি কোর নীতি হলো—React Elements are Immutable। একবার একটি রিয়্যাক্ট এলিমেন্ট অবজেক্ট তৈরি হয়ে গেলে, তার চিলড্রেন বা অ্যাট্রিবিউটগুলো সরাসরি মিউটেট (সংশোধন) করা অসম্ভব। এটি মুভির একটি একক নির্দিষ্ট ফ্রেমের (Single Frame) মতো, যা একটি নির্দিষ্ট মুহূর্তের ইউআই-এর স্ন্যাপশট ধরে রাখে।
+
+UI-তে কোনো পরিবর্তন আনতে হলে একমাত্র উপায় হলো নতুন একটি এলিমেন্ট স্ন্যাপশট তৈরি করা এবং রিয়্যাক্ট রেন্ডারারের মাধ্যমে তা ব্রাউজারে উপস্থাপন করা।
+
+ঘড়ির (Clock/Timer) উদাহরণ ও root.render():
+
+নিচের ঘড়ির উদাহরণটিতে প্রতি সেকেন্ডে নতুন এলিমেন্ট তৈরি করে UI আপডেট করা হচ্ছে:
+
+import ReactDOM from 'react-dom/client';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+function tick() {
+  const element = (
+    <div>
+      <h1>লাইভ ঘড়ি:</h1>
+      <h2>{new Date().toLocaleTimeString()}</h2>
+    </div>
+  );
+  root.render(element); // প্রতি সেকেন্ডে নতুন এলিমেন্ট রেন্ডার করা হচ্ছে
+}
+
+setInterval(tick, 1000);
+
+
+Virtual DOM, Diffing Algorithm এবং Reconciliation মেকানিজম:
+
+বাহ্যিকভাবে মনে হতে পারে প্রতি সেকেন্ডে পুরো <div> ট্যাগ ও এর ভেতরের সব এলিমেন্ট ব্রাউজার ডমে রি-বিল্ড হচ্ছে। কিন্তু রিয়্যাক্টের Virtual DOM Engine এটি অত্যন্ত দক্ষতার সাথে সমাধান করে:
+
+1. Virtual DOM Tree: রিয়্যাক্ট মেমোরিতে পুরো UI-এর একটি ভার্চুয়াল ট্রি (Virtual DOM) তৈরি করে রাখে।
+2. Re-rendering & Diffing Algorithm: প্রতিবার root.render() কল করা হলে রিয়্যাক্ট একটি নতুন Virtual DOM Tree গঠন করে এবং তার নিজস্ব Diffing Algorithm ব্যবহার করে পূর্ববর্তী (Previous) Virtual DOM Tree-এর সাথে নতুন (New) Virtual DOM Tree-এর তুলনা (Comparison) করে। এই প্রক্রিয়াকে Reconciliation বলা হয়।
+3. Targeted Real DOM Mutation: এই তুলনার মাধ্যমে রিয়্যাক্ট নিখুঁতভাবে শনাক্ত করে ঠিক কোন নোডটিতে পরিবর্তন এসেছে (যেমন ঘড়ির উদাহরণের শুধুমাত্র সেকেন্ড বা মিনিটের টেক্সট নোডটুকু)। রিয়্যাক্ট ব্রাউজারের মূল Real DOM-এ সম্পূর্ণ ট্রি রি-রেন্ডার না করে কেবল ওই নির্দিষ্ট পরিবর্তিত উপাদানটিকেই আপডেট করে।
+
+[ New Virtual DOM Tree ] 
+          VS              ---> (Diffing / Reconciliation) ---> [ Precise DOM Mutation ]
+[ Old Virtual DOM Tree ]
+
+
+1.5 পরবর্তী অধ্যায়ের সাথে সংযোজক বাক্য
+
+যদিও setInterval-এর মাধ্যমে বারবার রেন্ডার ডেকে ঘড়ি আপডেট করা সম্ভব, কিন্তু বাস্তব জীবনের জটিল অ্যাপ্লিকেশনে এভাবে ম্যানুয়ালি root.render() কল করা সুবিধাজনক নয়; কোডকে মডিউলার, স্বাবলম্বী ও পুনর্ব্যবহারযোগ্য করতে রিয়্যাক্ট প্রবর্তন করেছে Component-ভিত্তিক আর্কিটেকচার, যা পরবর্তী অধ্যায়ে আলোচনা করা হয়েছে।
+
+2. Lesson 6: React Components এবং Props-এর কোর কনসেপ্ট
+
+আধুনিক ওয়েব অ্যাপ্লিকেশন আর্কিটেকচারে রিয়্যাক্টের অনন্যতম অবদান হলো Component-Based Architecture। জটিল ও সুবিশাল ইউজার ইন্টারফেসকে ছোট ছোট, স্বাধীন, ইনক্যাপসুলেটেড এবং পুনর্ব্যবহারযোগ্য (Reusable) খণ্ডে বিভক্ত করে ডেভেলপ করার মেকানিজমই হলো কম্পোনেন্ট আর্কিটেকচার।
+
+2.1 React Component-এর সংজ্ঞা, ইনস্ট্যানশিয়েশন মেকানিজম এবং Functional Component
+
+React Element বনাম React Component:
+
+* React Element: এটি একটি প্লেইন জাভাস্ক্রিপ্ট অবজেক্ট, যা UI-এর কোনো একটি নির্দিষ্ট মুহূর্তের স্থির স্ন্যাপশট প্রকাশ করে।
+* React Component: এটি একটি ব্লুপ্রিন্ট বা ফাংশন/ক্লাস, যা ইনপুট হিসেবে প্রপস (Props) গ্রহণ করে এবং আউটপুট হিসেবে রিয়্যাক্ট এলিমেন্ট (JSX) রিটার্ন করে।
+
+Functional Component এবং এর এক্সিকিউশন:
+
+Functional Component হলো রিয়্যাক্টের সবচেয়ে সরল ও আধুনিক রূপ। এটি মূলত একটি প্লেইন জাভাস্ক্রিপ্ট ফাংশন:
+
+// একটি সরল Functional Component
+function Greeting(props) {
+  return <h1>হ্যালো, {props.name}!</h1>;
+}
+
+
+আর্কিটেকচারাল এক্সিকিউশন (Internal Execution): রিয়্যাক্ট যখন কোনো Functional Component (যেমন: <Greeting name="Sumit" />) রেন্ডার করার সিদ্ধান্ত নেয়, তখন অভ্যন্তরীণভাবে রিয়্যাক্ট কোনো নতুন ইনস্ট্যান্স তৈরি করে না; রিয়্যাক্ট কেবল ফাংশনটিকে সরাসরি কল করে: Greeting(props)।
+
+2.2 Class Component এবং ES6 Syntactic Sugar
+
+ES6-এর Class আর্কিটেকচার চালুর পর রিয়্যাক্ট অবজেক্ট-ওরিয়েন্টেড ধাঁচে Class Component তৈরির সুবিধা প্রবর্তন করে:
+
+import React from 'react';
+
+// Class Component-এর গঠন রূপরেখা
+class Greeting extends React.Component {
+  render() {
+    return <h1>হ্যালো, {this.props.name}!</h1>;
+  }
+}
+
+
+Class Component Instantiation বনাম Functional Execution:
+
+রিয়্যাক্ট ইঞ্জিনের ভেতরে Class Component এবং Functional Component এক্সিকিউশনের মধ্যে একটি মৌলিক শারীরিক পার্থক্য রয়েছে:
+
+1. Functional Component Execution: রিয়্যাক্ট কেবল ফাংশনটিকে সরাসরি এক্সিকিউট করে—Greeting(props)।
+2. Class Component Instantiation: যখন রিয়্যাক্ট একটি Class Component পায়, তখন রিয়্যাক্ট ইঞ্জিন প্রথমে জাভাস্ক্রিপ্টের new কিওয়ার্ডের মাধ্যমে ক্লাসটির একটি নতুন অবজেক্ট ইনস্ট্যান্স তৈরি করে—const instance = new Greeting(props)। এরপর উক্ত ইনস্ট্যান্সের render() মেথডটিকে কল করে—instance.render()।
+
+Class Component-এর অপরিহার্য শর্ত হলো এতে অবশ্যই একটি render() মেথড থাকতে হবে যা JSX (বা রিয়্যাক্ট এলিমেন্ট) রিটার্ন করবে।
+
+2.3 Props (Properties)-এর কার্যপ্রণালী এবং Read-Only নীতি
+
+Props (Properties-এর সংক্ষিপ্ত রূপ) হলো প্যারেন্ট কম্পোনেন্ট থেকে চাইল্ড কম্পোনেন্টে ডেটা পাঠানোর জন্য একটি একমুখী ট্রান্সপোর্টার।
+
+Props কীভাবে কাজ করে?
+
+যখন রিয়্যাক্ট কোনো কম্পোনেন্ট ট্যাগে অ্যাট্রিবিউট সংজ্ঞায়িত হতে দেখায়:
+
+<Clock locale="bn-BD" title="ঢাকা সময়" />
+
+
+রিয়্যাক্ট সমস্ত অ্যাট্রিবিউটকে একত্র করে একটি একক হিমায়িত (Frozen) অবজেক্ট তৈরি করে: { locale: "bn-BD", title: "ঢাকা সময়" }
+
+* Functional Component-এ: এটি ফাংশনের প্রথম আর্গুমেন্ট props হিসেবে রিসিভ হয়।
+* Class Component-এ: এটি ক্লাসের ইনস্ট্যান্স প্রপার্টি this.props হিসেবে অভিগম্য হয়।
+
+Strict Rule: "Props are Read-Only":
+
+রিয়্যাক্ট আর্কিটেকচারের সবচেয়ে অলঙ্ঘনীয় এবং কঠোর নিয়ম হলো:
+
+"All React components must act like pure functions with respect to their props."
+
+Pure Function (বিশুদ্ধ ফাংশন)-এর সাথে তুলনা:
+
+প্রোগ্রামিংয়ে 'Pure Function' হলো সেই ফাংশন, যা তার ইনপুট আর্গুমেন্টকে কখনো সরাসরি সংশোধন (Mutate) করে না এবং একই ইনপুটের জন্য সর্বদা একই আউটপুট প্রদান করে।
+
+// Pure Function (ইনপুট a ও b অবিকৃত থাকে)
+function sum(a, b) {
+  return a + b;
+}
+
+// Impure Function (ইনপুট অবজেক্টকে সরাসরি পরিবর্তন/মিউটেট করে)
+function withdraw(account, amount) {
+  account.total = account.total - amount; // সাইড-ইফেক্ট: ইনপুট মিউটেট হয়েছে!
+}
+
+
+রিয়্যাক্ট কম্পোনেন্টকে সর্বদা Pure Function-এর নীতি মেনে চলতে হয়। চাইল্ড কম্পোনেন্ট কখনো তার নিজের প্রপস মিউটেট করতে পারে না:
+
+function Clock(props) {
+  // ❌ অত্যন্ত ভুল ও নিষিদ্ধ!
+  props.locale = 'en-US'; 
+  
+  return <h1>{props.locale}</h1>;
+}
+
+
+প্রপস হলো ওপর থেকে নিচে প্রবাহিত Read-Only ডেটা। চাইল্ড কম্পোনেন্ট কেবল এই ডেটা রেন্ডার করতে পারবে, কিন্তু কখনোই পরিবর্তন করতে পারবে না।
+
+2.4 Component Composition এবং Encapsulation
+
+Component Composition (কম্পোনেন্ট সংযোজন):
+
+একটি পূর্ণাঙ্গ ওয়েব পেজের UI তৈরি করতে ছোট ছোট কাস্টম কম্পোনেন্টকে সমন্বিত করার পদ্ধতিই হলো Component Composition।
+
+function App() {
+  return (
+    <div>
+      <Greeting name="রহিম" />
+      <Greeting name="করিম" />
+      <Clock locale="bn-BD" />
+    </div>
+  );
+}
+
+
+Encapsulation এবং ES6 Module System:
+
+রিয়্যাক্ট কম্পোনেন্টগুলোকে স্বতন্ত্র ফাইলে ইনক্যাপসুলেট (Encapsulate) করে ES6 import ও export ব্যবহার করে প্রজেক্ট জুড়ে মডিউলার আকারে ব্যবহার করা হয়:
+
+// Clock.jsx
+import React from 'react';
+
+export default class Clock extends React.Component {
+  render() {
+    return <h1>{this.props.date.toLocaleTimeString()}</h1>;
+  }
+}
+
+// App.jsx
+import Clock from './Clock'; // মডিউল ইমপোর্ট
+
+
+2.5 পরবর্তী অধ্যায়ের সাথে সংযোজক বাক্য
+
+যেহেতু Props হলো সম্পূর্ণ Read-Only এবং চাইল্ড কম্পোনেন্ট তার প্রপসের মান পরিবর্তন করতে পারে না, সেহেতু একটি ইন্টারেক্টিভ অ্যাপ্লিকেশনে ইউজার অ্যাকশন বা সময়ের পরিবর্তনের সাথে সাথে স্থানীয় ডেটা পরিবর্তন করার জন্য রিয়্যাক্ট প্রদান করে State এবং Lifecycle ব্যবস্থা, যা পরবর্তী অধ্যায়ে বর্ণিত হয়েছে।
+
+3. Lesson 7: Class Component-এ State এবং Lifecycle Management
+
+একটি ডাইনামিক ও ইন্টারেক্টিভ ওয়েব অ্যাপ্লিকেশনে ব্যবহারকারীর ইনপুট, টাইমার বা নেটওয়ার্ক সাবস্ক্রিপশনের ওপর ভিত্তি করে ডেটা পরিবর্তিত হয়। কম্পোনেন্টের অভ্যন্তরীণ ডাইনামিক ডেটা পরিচালনা করা এবং ডেটা পরিবর্তনের সাথে সাথে UI-কে স্বয়ংক্রিয়ভাবে রি-রেন্ডার করার আধুনিক মেকানিজমই হলো State।
+
+3.1 Local State-এর প্রয়োজনীয়তা ও ধারণা
+
+পূর্বে আমরা দেখেছি যে UI আপডেট করার জন্য বাইরে থেকে নতুন এলিমেন্ট তৈরি করে রেন্ডার করতে হতো। কিন্তু মডিউলার আর্কিটেকচারের দাবি হলো—প্রতিটি কম্পোনেন্ট তার নিজস্ব স্টেট নিজে পরিচালনা করবে।
+
+Local State হলো কোনো কম্পোনেন্টের সম্পূর্ণ নিজস্ব এবং প্রাইভেট ডেটা স্টোরেজ, যা কম্পোনেন্টটির বাইরে থেকে সরাসরি পরিবর্তনযোগ্য নয়।
+
+Props বনাম State-এর তুলনামূলক ছক:
+
+বৈশিষ্ট্য	Props (প্রপস)	State (স্টেট)
+উৎস (Origin)	প্যারেন্ট কম্পোনেন্ট থেকে পাস হয়ে আসে	কম্পোনেন্টের ভেতরে সংজ্ঞায়িত হয়
+মালিকানা (Ownership)	প্যারেন্ট কম্পোনেন্টের অধীনে থাকে	নিজস্ব কম্পোনেন্টের পূর্ণ নিয়ন্ত্রণে থাকে
+পরিবর্তনযোগ্যতা (Mutability)	Immutable / Read-Only	Mutable (via setState())
+প্রধান উদ্দেশ্য	চাইল্ডে ডেটা ও কনফিগারেশন পাস করা	স্থানীয় ইন্টারঅ্যাকশন ও ডাইনামিক UI লালন করা
+
+3.2 State ইনিশিয়ালাইজেশন, super(props)-এর গভীর আর্কিটেকচার এবং setState()-এর নিয়মাবলী
+
+Class Component-এ State পরিচালনা করার সুনির্দিষ্ট ও বৈজ্ঞানিক নিয়ম রয়েছে।
+
+১. State ইনিশিয়ালাইজেশন ও super(props)-এর গভীর ব্যাখ্যা:
+
+Class Component-এর constructor-এ this.state অবজেক্ট ইনিশিয়ালাইজ করা হয়:
+
+class Clock extends React.Component {
+  constructor(props) {
+    super(props); // ES6 Inheritance নিয়ম
+    this.state = {
+      date: new Date()
+    };
+  }
+  
+  render() {
+    return <h2>সময়: {this.state.date.toLocaleTimeString()}</h2>;
+  }
+}
+
+
+super(props) কেন আবশ্যক?
+
+1. ES6 Class Inheritance Rule: জাভাস্ক্রিপ্টে যখন একটি সাব-ক্লাস (যেমন Clock) কোনো প্যারেন্ট ক্লাসকে (React.Component) এক্সটেন্ড করে, তখন সাব-ক্লাসের কনস্ট্রাক্টরে super() কল করার পূর্বে this কিওয়ার্ড ব্যবহার করা সম্পূর্ণ নিষিদ্ধ (Uninitialized ReferenceError ঘটাবে)।
+2. this.props ইনিশিয়ালাইজেশন: super(props)-এ props আর্গুমেন্ট হিসেবে পাস করার ফলেই React.Component তার নিজস্ব বেস কনস্ট্রাক্টরে this.props সেট করতে পারে। যদি কেউ কেবল super() কল করে কিন্তু props পাস না করে, তবে কনস্ট্রাক্টর ফাংশনের ভেতরে this.props অ্যাক্সেস করতে গেলে তা undefined রিটার্ন করবে (যদিও পরবর্তীতে render() মেথডে রিয়্যাক্ট স্বয়ংক্রিয়ভাবে এটি বাইন্ড করে দেয়, কিন্তু কনস্ট্রাক্টরের ভেতরে এটি বাগ তৈরি করে)।
+
+২. কড়া নিয়ম: সরাসরি State পরিবর্তন নিষিদ্ধ:
+
+স্টেট কখনো সরাসরি অ্যাসাইন করে পরিবর্তন করা যাবে না:
+
+// ❌ ভুল এবং সম্পূর্ণ নিষিদ্ধ! (রিয়্যাক্ট রি-রেন্ডার ট্রিগার হবে না)
+this.state.date = new Date();
+
+//  সঠিক নিয়ম: সর্বদা setState() ব্যবহার করতে হবে
+this.setState({
+  date: new Date()
+});
+
+
+this.setState() ডাকার ফলে রিয়্যাক্ট বুঝতে পারে স্টেট পরিবর্তিত হয়েছে এবং এটি কম্পোনেন্টের render() মেথড পুনরায় চালনা করে Virtual DOM-এর মাধ্যমে UI আপডেট করে।
+
+৩. setState()-এর Shallow Merge মেকানিজম:
+
+this.setState() কল করলে রিয়্যাক্ট পুরো স্টেট অবজেক্টকে ধ্বংস বা প্রতিস্থাপন করে না; বরং এটি Shallow Merge (অগভীর সংযোজন) করে।
+
+নিচে একটি পূর্ণাঙ্গ এবং স্বাবলম্বী ক্লাস কম্পোনেন্ট উদাহরণের মাধ্যমে Shallow Merge প্রক্রিয়াটি উপস্থাপন করা হলো:
+
+import React from 'react';
+
+class PostList extends React.Component {
+  constructor(props) {
+    super(props);
+    // দুটি পৃথক প্রপার্টি নিয়ে স্টেট শুরু
+    this.state = {
+      posts: [],
+      comments: ['প্রথম কমেন্ট', 'দ্বিতীয় কমেন্ট']
+    };
+  }
+
+  componentDidMount() {
+    // কাল্পনিক API রিকোয়েস্ট শেষে কেবল posts আপডেট করা হচ্ছে
+    setTimeout(() => {
+      const fetchedPosts = [{ id: 1, title: 'রিয়্যাক্ট আর্কিটেকচার' }];
+      
+      this.setState({
+        posts: fetchedPosts
+        // comments প্রপার্টি এখানে না উল্লেখ করলেও তা অক্ষুণ্ণ থাকবে (Shallow Merge)
+      });
+    }, 1000);
+  }
+
+  render() {
+    return (
+      <div>
+        <h2>পোস্ট সংখ্যা: {this.state.posts.length}</h2>
+        <h2>কমেন্ট সংখ্যা: {this.state.comments.length}</h2>
+      </div>
+    );
+  }
+}
+
+export default PostList;
+
+
+এখানে setState({ posts: ... }) এক্সিকিউট হওয়ার পর রিয়্যাক্ট স্টেট অবজেক্টের posts প্রপার্টি আপডেট করে, কিন্তু comments প্রপার্টিকে সম্পূর্ণ অক্ষুণ্ণ ও অপরিবর্তিত রাখে।
+
+৪. Event Loop Batching এবং Asynchronous State Updates:
+
+রিয়্যাক্ট অ্যাপ্লিকেশনের পারফর্ম্যান্স চমৎকার রাখার জন্য রিয়্যাক্ট ইভেন্ট হ্যান্ডলারের ভেতরের একাধিক setState() কলকে একসাথে Batch (একত্রিত) করে অ্যাসিনক্রোনাসলি এক্সিকিউট করে। এর উদ্দেশ্য হলো প্রতিটি setState()-এর জন্য বারবার ব্রাউজারের UI রেন্ডারিং ও লেআউট রি-ক্যালকুলেশন বন্ধ করে একটি একক রেন্ডার পাসে সমস্ত আপডেট শেষ করা।
+
+যেহেতু setState() অ্যাসিনক্রোনাস, তাই বর্তমান স্টেটের ওপর ভিত্তি করে স্টেট আপডেট করতে নিচের কোডটি ঝুঁকিপূর্ণ:
+
+// ❌ ভুল পদ্ধতি (অ্যাসিনক্রোনাস ব্যাচিংয়ের কারণে ভুল মান গণনা হতে পারে)
+this.setState({
+  counter: this.state.counter + this.props.increment
+});
+
+
+সমাধান (Updater Function পাস করা): পূর্ববর্তী স্টেট বা প্রপসের ওপর ভিত্তি করে নিখুঁত গণনা নিশ্চিত করতে setState()-এ অবজেক্টের বদলে একটি Callback Function পাস করতে হয়, যা আর্গুমেন্ট হিসেবে তৎকালীন সঠিক prevState এবং props রিসিভ করে:
+
+//  সঠিক পদ্ধতি (Functional setState)
+this.setState((prevState, props) => ({
+  counter: prevState.counter + props.increment
+}));
+
+
+3.3 Component Lifecycle Methods (componentDidMount ও componentWillUnmount)
+
+একটি রিয়্যাক্ট কম্পোনেন্টের জন্ম (DOM-এ মাউন্ট হওয়া), জীবনকাল (স্টেট/প্রপস আপডেট হওয়া) এবং মৃত্যু (DOM থেকে আনমাউন্ট হওয়া)—এই পুরো আবর্তনকে Component Lifecycle বলা হয়।
+
+১. componentDidMount():
+
+* কখন এক্সিকিউট হয়: কম্পোনেন্টটি ব্রাউজার DOM-এ সফলভাবে প্রথমবার রেন্ডার হওয়ার সাথে সাথে রিয়্যাক্ট এই মেথডটি চালু করে।
+* ব্যবহারের প্রধান ক্ষেত্র: টাইমার সেশন চালু করা (setInterval), API থেকে ডেটা ফ্যাচ করা, বা সরাসরি DOM নোডে ইভেন্ট সাবস্ক্রিপশন যুক্ত করা।
+
+২. componentWillUnmount():
+
+* কখন এক্সিকিউট হয়: যখন কোনো কম্পোনেন্টকে ব্রাউজার DOM থেকে সম্পূর্ণরূপে মুছে বা তুলে ফেলা (Unmount) হতে থাকে, ঠিক তার পূর্বমুহূর্তে এটি রান হয়।
+* ব্যবহারের প্রধান ক্ষেত্র: অ্যাপ্লিকেশনে Memory Leak প্রতিরোধ করার জন্য সমস্ত সেশন ক্লিনআপ করা (যেমন: clearInterval, ইভেন্ট লিসেনার রিমুভ করা বা API সকেটের কানেকশন ক্লোজ করা)।
+
+সম্পূর্ণ আত্মনির্ভরশীল Clock কম্পোনেন্টের কোড রূপান্তর (ধাপভিত্তিক মন্তব্যসহ):
+
+import React from 'react';
+
+class Clock extends React.Component {
+  // Step 1: Initialize Local State and call super(props)
+  constructor(props) {
+    super(props);
+    this.state = { 
+      date: new Date() 
+    };
+  }
+
+  // Step 2: Set up timer in componentDidMount after DOM mounting
+  componentDidMount() {
+    this.timerID = setInterval(
+      () => this.tick(),
+      1000
+    );
+  }
+
+  // Step 3: Clean up timer in componentWillUnmount before DOM deletion
+  componentWillUnmount() {
+    clearInterval(this.timerID);
+  }
+
+  // Step 4: Update state periodically via setState to trigger re-render
+  tick() {
+    this.setState({
+      date: new Date()
+    });
+  }
+
+  // Step 5: Render UI snapshot based on current state and props
+  render() {
+    return (
+      <div>
+        <h1>বর্তমান সময়:</h1>
+        <h2>{this.state.date.toLocaleTimeString(this.props.locale)}</h2>
+      </div>
+    );
+  }
+}
+
+export default Clock;
+
+
+3.4 Unidirectional Data Flow (একমুখী ডেটা প্রবাহ)
+
+রিয়্যাক্ট আর্কিটেকচারের অন্যতম মূল ভিত্তি হলো Top-Down বা Unidirectional Data Flow (একমুখী ডেটা প্রবাহ)।
+
+[ Parent Component (Holds State) ]
+               │
+               ▼  (Passes state as Prop)
+ [ Child Component (Receives Prop) ]
+               │
+               ▼  (Passes state as Prop)
+[ Sub-Child Component (Pure Display) ]
+
+
+আর্কিটেকচারাল ব্যাখ্যা:
+
+1. রিয়্যাক্টে ডেটা সর্বদা ওপরের প্যারেন্ট কম্পোনেন্ট থেকে নিচের দিকে চাইল্ড কম্পোনেন্টের অভিমুখে প্রবাহিত হয়।
+2. কোনো কম্পোনেন্টের State হলো তার নিজস্ব স্থানীয় এবং গোপন সম্পদ। কিন্তু সেই কম্পোনেন্ট চাইলে তার State-কে নিচে থাকা চাইল্ড কম্পোনেন্টে Props হিসেবে পাস করতে পারে:
+
+// প্যারেন্ট কম্পোনেন্ট তার নিজস্ব State চাইল্ডে Prop হিসেবে পাঠাচ্ছে
+<FormattedDate date={this.state.date} />
+
+
+FormattedDate চাইল্ড কম্পোনেন্ট তার প্রপসে date মানটি গ্রহণ করে:
+
+function FormattedDate(props) {
+  return <h2>এখন সময়: {props.date.toLocaleTimeString()}</h2>;
+}
+
+
+চাইল্ড কম্পোনেন্টের দৃষ্টিকোণ:
+
+FormattedDate কম্পোনেন্টটি পুরোপুরি অজ্ঞ বা নিউট্রাল যে এই date ডেটাটি প্যারেন্টের State থেকে এসেছে, নাকি প্যারেন্টের Props থেকে এসেছে, নাকি এটি সাধারণ কোনো হার্ডকোডেড ভ্যালু।
+
+যেকোনো State সর্বদা একটি নির্দিষ্ট কম্পোনেন্টের মালিকানায় সংবদ্ধ (Encapsulated) থাকে। এই স্টেট থেকে উদ্ভূত যেকোনো ডেটা কেবল তার নিচে থাকা চাইল্ড ট্রি-তেই প্রভাব ফেলতে পারে, যাকে বলা হয় Top-Down / Unidirectional Data Flow।
+
+3.5 সারসংক্ষেপ ও সমাপনী বক্তব্য
+
+আধুনিক ওয়েব অ্যাপ্লিকেশনের ভিত্তি গড়ে ওঠে React Element, JSX, Component, Props এবং State ও Lifecycle-এর সমন্বিত মেকানিজমের ওপর। Virtual DOM এবং Diffing Algorithm-এর দক্ষ রেন্ডারিং ব্যবস্থার মাধ্যমে রিয়্যাক্ট যেভাবে ব্রাউজার ডম পরিবর্তন পর্যবেক্ষণ করে, তা অ্যাপ্লিকেশনের পারফর্ম্যান্স বহুগুণ বাড়িয়ে দেয়। একই সাথে, Pure Function নীতিতে Props-এর একমুখী প্রবাহ এবং setState()-এর মাধ্যমে স্বাবলম্বী Local State ব্যবস্থাপনা কোডকে করে তোলে মডিউলার, টেকসই ও সহজে রক্ষণাবেক্ষণযোগ্য। এই মৌলিক ভিত্তিগুলো সঠিকভাবে অনুধাবন করাই হলো একজন দক্ষ রিয়্যাক্ট আর্কিটেক্ট হয়ে ওঠার প্রথম ও প্রধান শর্ত।
