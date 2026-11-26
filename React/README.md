@@ -10,10 +10,10 @@ React হলো Meta (Facebook) দ্বারা তৈরি একটি আ
 
 | লেসন ডিরেক্টরি | বিষয়বস্তু | মূল শিক্ষণীয় বিষয় | স্ট্যাটাস |
 |---|---|---|:---:|
-| **[01-jsx-and-element-rendering](./01-jsx-and-element-rendering/)** | **JSX ও এলিমেন্ট রেন্ডারিং মেকানিজম** | DOM vs React Element, `React.createElement`, Babel ট্রান্সপাইলেশন, XSS প্রতিরোধ, Immutability, Virtual DOM ও Reconciliation | 📘 Notes Prepared <br> 🟡 In Progress |
-| **[02-components-and-props](./02-components-and-props/)** | **কম্পোনেন্ট আর্কিটেকচার ও প্রপস** | Functional vs Class Component, Instantiation, Read-Only Props, Pure Functions ও Component Composition | 📘 Notes Prepared <br> 🟡 In Progress |
-| **[03-state-and-lifecycle](./03-state-and-lifecycle/)** | **স্টেট ম্যানেজমেন্ট ও লাইফসাইকেল মেথডস** | Local State, `super(props)` ইন্টারনালস, `setState()` Shallow Merge, Async Batching, Lifecycle Methods ও Memory Leak প্রতিরোধ | 📘 Notes Prepared <br> 🟡 In Progress |
-| **[04-event-handling](./04-event-handling/)** | **ইভেন্ট হ্যান্ডলিং ও ইন্টারঅ্যাকশন** | SyntheticEvent সিস্টেম, `camelCase`, `e.preventDefault()`, আর্গুমেন্ট পাসিং ও ইভেন্টের মাধ্যমে State আপডেট | 📘 Notes Prepared <br> 🟡 In Progress |
+| **[01-jsx-and-element-rendering](./01-jsx-and-element-rendering/)** | **JSX ও এলিমেন্ট রেন্ডারিং মেকানিজম** | DOM vs React Element, `React.createElement`, Babel ট্রান্সপাইলেশন, XSS প্রতিরোধ, Immutability, Virtual DOM ও Reconciliation | 🟢 Completed |
+| **[02-components-and-props](./02-components-and-props/)** | **কম্পোনেন্ট আর্কিটেকচার ও প্রপস** | Functional vs Class Component, Instantiation, Read-Only Props, Pure Functions ও Component Composition | 🟢 Completed |
+| **[03-state-and-lifecycle](./03-state-and-lifecycle/)** | **স্টেট ম্যানেজমেন্ট ও লাইফসাইকেল মেথডস** | Local State, `super(props)` ইন্টারনালস, `setState()` Shallow Merge, Async Batching, Lifecycle Methods ও Memory Leak প্রতিরোধ | 🟢 Completed |
+| **[04-event-handling](./04-event-handling/)** | **ইভেন্ট হ্যান্ডলিং ও ইন্টারঅ্যাকশন** | SyntheticEvent সিস্টেম, `camelCase`, `e.preventDefault()`, আর্গুমেন্ট পাসিং ও ইভেন্টের মাধ্যমে State আপডেট | 🟢 Completed |
 | **[05-react-hooks-overview](./README.md)** | **আধুনিক রিয়্যাক্ট হুকস (`useState`, `useEffect`)** | (ভবিষ্যতে বিস্তারিত নোট আসবে) Functional Component State, Side Effects ও Custom Hooks | ⚪ Roadmap |
 | **[06-forms-controlled-components](./README.md)** | **ফর্ম ও ইনপুট হ্যান্ডলিং** | (রোডম্যাপ) Controlled Components, Form Validation ও সাবমিশন | ⚪ Roadmap |
 | **[07-context-api-state-management](./README.md)** | **গ্লোবাল স্টেট ম্যানেজমেন্ট (Context API / Redux)** | (রোডম্যাপ) প্রপ ড্রিলিং সমাধান ও গ্লোবাল অ্যাপ স্টেট | ⚪ Roadmap |

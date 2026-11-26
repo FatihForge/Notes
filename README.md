@@ -22,7 +22,7 @@
 | **Node.js** | সার্ভার-সাইড রানটাইম, V8 ইঞ্জিন, Streams, Event Loop এবং কোর মডিউল | [`/Node.js`](./Node.js/) | ৮টি লেসন | 🟢 Completed |
 | **Express.js** | ফ্লেক্সিবল ওয়েব ফ্রেমওয়ার্ক, মিডলওয়্যার, MVC, Routing, Auth ও Uploads | [`/Express.js`](./Express.js/) | ১১টি লেসন | 🟢 Completed |
 | **MongoDB** | NoSQL ডেটাবেস, BSON, Compass, Atlas কানেকশন ও Mongoose ODM | [`/MongoDB`](./MongoDB/) | ৩টি লেসন | 🟢 Completed |
-| **React** | ডিক্লেয়ারেটিভ UI, JSX, Props, State, Lifecycle ও Event Handling | [`/React`](./React/) | ৪টি লেসন (প্রস্তুত) | 🟡 In Progress |
+| **React** | ডিক্লেয়ারেটিভ UI, JSX, Props, State, Lifecycle ও Event Handling | [`/React`](./React/) | ৪টি লেসন (প্রস্তুত) | 🟢 Completed (মৌলিক ৪টি লেসন) |
 | **Next.js** | ফুল-স্ট্যাক ফ্রেমওয়ার্ক, App Router, RSC, SSR/SSG/ISR, Data Fetching ও SEO | [`/Next.js`](./Next.js/) | ১৪টি লেসন (প্রস্তুত) | 🟡 In Progress |
 
 > 📊 **আমার সম্পূর্ণ শেখার অগ্রগতি ও রিভিশন ট্র্যাকার দেখতে দেখুন: [LEARNING-TRACKER.md](./LEARNING-TRACKER.md)**
